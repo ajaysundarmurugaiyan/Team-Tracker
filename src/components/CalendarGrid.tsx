@@ -87,46 +87,46 @@ export default function CalendarGrid() {
 
   return (
     <div className="bg-white border border-slate-200 shadow-sm overflow-hidden flex flex-col h-full rounded-2xl transition-colors">
-      <div className="p-8 border-b border-slate-100 bg-slate-50/50 flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="flex items-center gap-5">
-          <div className="w-12 h-12 bg-white rounded-xl border border-slate-200 shadow-sm flex items-center justify-center">
-            <CalendarIcon className="w-6 h-6 text-slate-700" />
+      <div className="p-6 sm:p-8 border-b border-slate-100 bg-slate-50/50 flex flex-col lg:flex-row lg:items-center justify-between gap-6 sm:gap-8">
+        <div className="flex items-center gap-4 sm:gap-5">
+          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white rounded-xl border border-slate-200 shadow-sm flex items-center justify-center shrink-0">
+            <CalendarIcon className="w-5 h-5 sm:w-6 sm:h-6 text-slate-700" />
           </div>
-          <div>
-            <h2 className="text-2xl font-black text-slate-900 font-outfit tracking-tight">
+          <div className="min-w-0">
+            <h2 className="text-xl sm:text-2xl font-black text-slate-900 font-outfit tracking-tight truncate">
               {getMonthName(month)} {year}
             </h2>
-            <div className="flex items-center gap-3 mt-1">
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Efficiency Metrics</span>
-              <div className="h-1 w-20 bg-slate-200 rounded-full overflow-hidden">
+            <div className="flex items-center gap-2 sm:gap-3 mt-1">
+              <span className="text-[8px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">Efficiency Metrics</span>
+              <div className="h-1 w-12 sm:w-20 bg-slate-200 rounded-full overflow-hidden shrink-0">
                 <motion.div 
                    initial={{ width: 0 }}
                    animate={{ width: `${stats.completionRate}%` }}
                    className="h-full bg-emerald-500"
                 />
               </div>
-              <span className="text-[10px] font-black text-emerald-600">{stats.completionRate}%</span>
+              <span className="text-[8px] sm:text-[10px] font-black text-emerald-600 shrink-0">{stats.completionRate}%</span>
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-6">
-          <div className="flex gap-4">
-            <div className="text-right">
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Monthly Active</p>
-              <p className="text-lg font-black text-slate-900">{stats.monthCount}<span className="text-slate-300 text-sm">/{stats.monthTotal}D</span></p>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 sm:gap-6">
+          <div className="flex items-center justify-between sm:justify-start gap-4 sm:gap-6">
+            <div className="text-right flex-1 sm:flex-none">
+              <p className="text-[8px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5 sm:mb-1">Monthly Active</p>
+              <p className="text-base sm:text-lg font-black text-slate-900">{stats.monthCount}<span className="text-slate-300 text-[10px] sm:text-sm">/{stats.monthTotal}D</span></p>
             </div>
-            <div className="w-[1px] h-10 bg-slate-200" />
-            <div className="text-right">
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Weekly Active</p>
-              <p className="text-lg font-black text-slate-900">{stats.weekCount}<span className="text-slate-300 text-sm">/7D</span></p>
+            <div className="w-[1px] h-8 sm:h-10 bg-slate-200" />
+            <div className="text-right flex-1 sm:flex-none">
+              <p className="text-[8px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5 sm:mb-1">Weekly Active</p>
+              <p className="text-base sm:text-lg font-black text-slate-900">{stats.weekCount}<span className="text-slate-300 text-[10px] sm:text-sm">/7D</span></p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 bg-white p-1.5 rounded-xl border border-slate-200 shadow-sm">
-            <button onClick={prevMonth} className="p-2 hover:bg-slate-50 rounded-lg transition-all text-slate-500"><ChevronLeft className="w-5 h-5" /></button>
-            <button onClick={() => setCurrentDate(new Date())} className="px-4 py-1.5 text-[10px] font-black text-slate-600 hover:text-slate-900 uppercase tracking-widest">Today</button>
-            <button onClick={nextMonth} className="p-2 hover:bg-slate-50 rounded-lg transition-all text-slate-500"><ChevronRight className="w-5 h-5" /></button>
+          <div className="flex items-center gap-2 bg-white p-1 rounded-xl border border-slate-200 shadow-sm w-full sm:w-auto">
+            <button onClick={prevMonth} className="flex-1 sm:flex-none p-2 hover:bg-slate-50 rounded-lg transition-all text-slate-500 flex items-center justify-center"><ChevronLeft className="w-4 h-4 sm:w-5 h-5" /></button>
+            <button onClick={() => setCurrentDate(new Date())} className="flex-1 sm:flex-none px-3 sm:px-4 py-1.5 text-[8px] sm:text-[10px] font-black text-slate-600 hover:text-slate-900 uppercase tracking-widest">Today</button>
+            <button onClick={nextMonth} className="flex-1 sm:flex-none p-2 hover:bg-slate-50 rounded-lg transition-all text-slate-500 flex items-center justify-center"><ChevronRight className="w-4 h-4 sm:w-5 h-5" /></button>
           </div>
         </div>
       </div>

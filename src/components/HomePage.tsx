@@ -50,48 +50,48 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen p-4 md:p-8 lg:p-12 bg-[#f8fafc]">
+    <div className="min-h-screen p-4 sm:p-6 md:p-8 lg:p-12 bg-[#f8fafc]">
       <div className="max-w-7xl mx-auto">
-        <header className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-8 pb-8 border-b border-slate-200/60">
+        <header className="mb-8 sm:mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6 sm:gap-8 pb-6 sm:pb-8 border-b border-slate-200/60">
           <div>
-            <div className="flex items-center gap-4 mb-4">
-              <div className="w-12 h-12 bg-slate-900 rounded-xl flex items-center justify-center shadow-2xl shadow-slate-900/20">
-                <Zap className="w-6 h-6 text-white" />
+            <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-slate-900 rounded-xl flex items-center justify-center shadow-2xl shadow-slate-900/20">
+                <Zap className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
               </div>
-              <h1 className="text-4xl font-black font-outfit tracking-tight text-slate-900">
+              <h1 className="text-2xl sm:text-4xl font-black font-outfit tracking-tight text-slate-900">
                 LUMINA<span className="text-slate-400">SYNC</span>
               </h1>
             </div>
-            <p className="text-sm font-bold text-slate-400 uppercase tracking-[0.3em] max-w-md">
+            <p className="text-[8px] sm:text-sm font-bold text-slate-400 uppercase tracking-[0.2em] sm:tracking-[0.3em] max-w-md">
               High-Precision Performance Auditing & Skill Mapping
             </p>
           </div>
           
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-4">
             {profile?.role === 'lead' && (
               <button
                 onClick={() => router.push('/lead')}
-                className="px-6 py-4 bg-white border border-slate-200 rounded-xl text-slate-600 hover:text-slate-900 transition-all font-black uppercase tracking-widest text-[10px] flex items-center gap-2 shadow-sm"
+                className="flex-1 sm:flex-none px-4 sm:px-6 py-3 sm:py-4 bg-white border border-slate-200 rounded-xl text-slate-600 hover:text-slate-900 transition-all font-black uppercase tracking-widest text-[9px] sm:text-[10px] flex items-center justify-center gap-2 shadow-sm"
               >
-                <Users className="w-4 h-4" />
+                <Users className="w-3.5 h-3.5 sm:w-4 h-4" />
                 <span>Lead Ops</span>
               </button>
             )}
             
             <button
               onClick={() => router.push('/log')}
-              className="px-8 py-4 bg-slate-900 text-white rounded-xl shadow-xl shadow-slate-900/10 hover:bg-black transition-all font-black uppercase tracking-[0.2em] text-[10px] flex items-center gap-3 border border-white/10"
+              className="flex-1 sm:flex-none px-6 sm:px-8 py-3 sm:py-4 bg-slate-900 text-white rounded-xl shadow-xl shadow-slate-900/10 hover:bg-black transition-all font-black uppercase tracking-[0.15em] sm:tracking-[0.2em] text-[9px] sm:text-[10px] flex items-center justify-center gap-2 sm:gap-3 border border-white/10"
             >
-              <Plus className="w-4 h-4 text-emerald-400" />
+              <Plus className="w-3.5 h-3.5 sm:w-4 h-4 text-emerald-400" />
               <span>Initialize Capture</span>
             </button>
 
             <button
               onClick={signOut}
-              className="p-4 bg-white border border-slate-200 rounded-xl text-slate-400 hover:text-red-500 transition-all shadow-sm group"
+              className="p-3 sm:p-4 bg-white border border-slate-200 rounded-xl text-slate-400 hover:text-red-500 transition-all shadow-sm group"
               title="Sign Out"
             >
-              <LogOut className="w-5 h-5 group-hover:rotate-180 transition-transform duration-500" />
+              <LogOut className="w-4 h-4 sm:w-5 h-5 group-hover:rotate-180 transition-transform duration-500" />
             </button>
           </div>
         </header>

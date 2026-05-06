@@ -160,31 +160,31 @@ export default function LeadDashboard() {
     <div className="min-h-screen bg-white p-4 sm:p-8 md:p-12 transition-colors duration-300">
       <div className="max-w-[1600px] mx-auto">
         {/* Navigation Bar */}
-        <nav className="flex flex-col lg:flex-row lg:items-center justify-between mb-8 md:mb-16 pb-8 border-b border-slate-100 gap-6">
-          <div className="flex items-center justify-between w-full lg:w-auto gap-8">
+        <nav className="flex flex-col lg:flex-row lg:items-center justify-between mb-8 md:mb-16 pb-6 sm:pb-8 border-b border-slate-100 gap-6">
+          <div className="flex items-center justify-between w-full lg:w-auto gap-4 sm:gap-8">
             <button
               onClick={() => router.push('/')}
-              className="flex items-center gap-3 text-slate-400 hover:text-slate-900 transition-all group shrink-0"
+              className="flex items-center gap-2 sm:gap-3 text-slate-400 hover:text-slate-900 transition-all group shrink-0"
             >
-              <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-              <span className="text-[10px] font-black uppercase tracking-widest">Dashboard</span>
+              <ArrowLeft className="w-3.5 h-3.5 sm:w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+              <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest">Dashboard</span>
             </button>
             <div className="hidden sm:block w-[1px] h-4 bg-slate-100" />
-            <div className="flex items-center gap-3 shrink-0">
-              <Zap className="w-5 h-5 text-slate-900" />
-              <h1 className="text-base sm:text-xl font-black tracking-tighter text-slate-900 whitespace-nowrap">LEAD OPERATIONS</h1>
+            <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+              <Zap className="w-4 h-4 sm:w-5 h-5 text-slate-900" />
+              <h1 className="text-sm sm:text-xl font-black tracking-tighter text-slate-900 whitespace-nowrap uppercase">LEAD OPS</h1>
             </div>
           </div>
 
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 sm:gap-6 w-full lg:w-auto">
             <div className="relative group w-full sm:w-64">
-              <Search className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-slate-900 transition-colors" />
+              <Search className="absolute left-0 top-1/2 -translate-y-1/2 w-3.5 h-3.5 sm:w-4 h-4 text-slate-300 group-focus-within:text-slate-900 transition-colors" />
               <input
                 type="text"
                 placeholder="SEARCH IDENTITY..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-8 pr-4 py-2 bg-transparent border-b border-slate-200 sm:border-transparent focus:border-slate-900 focus:outline-none font-black text-[10px] tracking-widest w-full transition-all"
+                className="pl-7 sm:pl-8 pr-4 py-2 bg-transparent border-b border-slate-200 sm:border-transparent focus:border-slate-900 focus:outline-none font-black text-[9px] sm:text-[10px] tracking-widest w-full transition-all"
               />
             </div>
             <div className="flex gap-1 p-1 bg-slate-50 rounded-lg self-start sm:self-auto overflow-x-auto max-w-full">
@@ -192,7 +192,7 @@ export default function LeadDashboard() {
                 <button
                   key={f}
                   onClick={() => setFilter(f)}
-                  className={`px-3 py-1.5 text-[8px] font-black uppercase tracking-widest transition-all rounded whitespace-nowrap ${filter === f ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                  className={`px-2.5 sm:px-3 py-1.5 text-[7px] sm:text-[8px] font-black uppercase tracking-widest transition-all rounded whitespace-nowrap ${filter === f ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
                 >
                   {f === 'not-logged' ? 'Missing' : f}
                 </button>
@@ -251,32 +251,32 @@ export default function LeadDashboard() {
                   exit={{ opacity: 0, y: -10 }}
                   className="space-y-8 md:space-y-12"
                 >
-                  <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
-                    <div className="flex items-center gap-4">
-                      <div className="w-16 h-16 sm:w-20 sm:h-20 bg-slate-50 border border-slate-100 rounded-2xl flex items-center justify-center text-2xl sm:text-4xl font-black text-slate-200 shrink-0">
+                  <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 sm:gap-8">
+                    <div className="flex items-center gap-3 sm:gap-4">
+                      <div className="w-14 h-14 sm:w-20 sm:h-20 bg-slate-50 border border-slate-100 rounded-2xl flex items-center justify-center text-xl sm:text-4xl font-black text-slate-200 shrink-0">
                         {selectedMember.full_name?.[0]}
                       </div>
                       <div className="min-w-0">
-                        <h2 className="text-2xl sm:text-4xl font-black text-slate-900 tracking-tighter truncate">{selectedMember.full_name}</h2>
-                        <div className="flex items-center gap-3 mt-2 flex-wrap">
-                          <span className="px-2 py-0.5 bg-slate-900 text-white text-[8px] font-black uppercase tracking-widest rounded">{selectedMember.role}</span>
-                          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">ID: {selectedMember.employee_id}</span>
+                        <h2 className="text-xl sm:text-4xl font-black text-slate-900 tracking-tighter truncate">{selectedMember.full_name}</h2>
+                        <div className="flex items-center gap-2 sm:gap-3 mt-1 sm:mt-2 flex-wrap">
+                          <span className="px-1.5 py-0.5 bg-slate-900 text-white text-[7px] sm:text-[8px] font-black uppercase tracking-widest rounded">{selectedMember.role}</span>
+                          <span className="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest">ID: {selectedMember.employee_id}</span>
                         </div>
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-8 w-full md:w-auto">
-                      <div className="text-left md:text-right p-4 md:p-0 bg-slate-50 md:bg-transparent rounded-xl md:rounded-none">
-                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Monthly Sync</p>
-                        <p className="text-2xl font-black text-slate-900">{selectedMember.stats.monthlyConsistency}%</p>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-8 w-full md:w-auto">
+                      <div className="text-left md:text-right p-3 sm:p-0 bg-slate-50 md:bg-transparent rounded-xl md:rounded-none">
+                        <p className="text-[8px] sm:text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5 sm:mb-1">Monthly Sync</p>
+                        <p className="text-xl sm:text-2xl font-black text-slate-900">{selectedMember.stats.monthlyConsistency}%</p>
                       </div>
-                      <div className="text-left md:text-right p-4 md:p-0 bg-slate-50 md:bg-transparent rounded-xl md:rounded-none">
-                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Yearly target</p>
-                        <p className="text-2xl font-black text-slate-900">{selectedMember.stats.yearlyConsistency}%</p>
+                      <div className="text-left md:text-right p-3 sm:p-0 bg-slate-50 md:bg-transparent rounded-xl md:rounded-none">
+                        <p className="text-[8px] sm:text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5 sm:mb-1">Yearly target</p>
+                        <p className="text-xl sm:text-2xl font-black text-slate-900">{selectedMember.stats.yearlyConsistency}%</p>
                       </div>
-                      <div className="text-left md:text-right p-4 md:p-0 bg-slate-50 md:bg-transparent rounded-xl md:rounded-none">
-                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Total Audits</p>
-                        <p className="text-2xl font-black text-slate-900">{selectedMember.stats.totalLogs}</p>
+                      <div className="col-span-2 sm:col-span-1 text-left md:text-right p-3 sm:p-0 bg-slate-50 md:bg-transparent rounded-xl md:rounded-none">
+                        <p className="text-[8px] sm:text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5 sm:mb-1">Total Audits</p>
+                        <p className="text-xl sm:text-2xl font-black text-slate-900">{selectedMember.stats.totalLogs}</p>
                       </div>
                     </div>
                   </div>

@@ -19,8 +19,8 @@ export default function SignupPage() {
     setIsLoading(true);
     
     try {
-      const virtualEmail = `${employeeId.trim().toLowerCase()}@lumina.sync`;
-      const { error } = await (supabase.auth as any).signUp({
+      const virtualEmail = `${employeeId.trim().toLowerCase()}@lumina-sync.com`;
+      const { data, error } = await supabase.auth.signUp({
         email: virtualEmail,
         password,
         options: { 
@@ -34,7 +34,16 @@ export default function SignupPage() {
 
       if (error) {
         toast.error(error.message);
-      } else {
+      } else if (data.user) {
+        // Explicitly create profile to bypass potential trigger failures in production
+        await supabase.from('profiles').upsert({
+          id: data.user.id,
+          full_name: fullName.trim(),
+          role: role,
+          employee_id: employeeId.trim(),
+          skills: []
+        });
+
         toast.success('Identity Created Successfully');
         window.location.replace('/login'); 
       }

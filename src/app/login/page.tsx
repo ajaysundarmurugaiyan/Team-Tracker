@@ -17,7 +17,7 @@ export default function LoginPage() {
     setIsLoading(true);
     
     try {
-      const virtualEmail = `${employeeId.trim().toLowerCase()}@lumina.sync`;
+      const virtualEmail = `${employeeId.trim().toLowerCase()}@lumina-sync.com`;
       const { error } = await (supabase.auth as any).signInWithPassword({ 
         email: virtualEmail, 
         password 

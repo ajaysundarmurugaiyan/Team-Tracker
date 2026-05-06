@@ -90,6 +90,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       if (mounted) {
         setUser(currentUser);
         if (currentUser && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION')) {
+          setProfile(null); // Clear any stale profile data during transition
           await fetchProfile(currentUser.id);
         } else if (event === 'SIGNED_OUT') {
           setProfile(null);
@@ -106,7 +107,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const fetchProfile = async (userId: string) => {
-    // Avoid double loading if already done
+    setLoading(true);
     try {
       const { data, error } = await supabase
         .from('profiles')
@@ -117,7 +118,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       if (error && error.code === 'PGRST116') {
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
-          const { data: newProfile, error: createError } = await supabase
+          const { data: newProfile } = await supabase
             .from('profiles')
             .insert({
               id: user.id,
@@ -209,7 +210,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     await supabase.auth.signOut();
     setProfile(null);
     setUser(null);
-    window.location.href = '/login'; // Force clear state and redirect
+    window.location.replace('/login'); // Force clear state and history
   };
 
   return (

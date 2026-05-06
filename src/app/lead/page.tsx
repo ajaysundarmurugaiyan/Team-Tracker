@@ -244,7 +244,29 @@ export default function LeadDashboard() {
           {/* Right Panel: Member Details */}
           <div className="flex-1 min-w-0">
             <AnimatePresence mode="wait">
-              {selectedMember ? (
+              {filteredMembers.length === 0 && !loading ? (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="h-[400px] lg:h-[700px] bg-slate-50 border-2 border-dashed border-slate-100 rounded-[2rem] flex flex-col items-center justify-center text-center p-8 space-y-6"
+                >
+                  <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-sm">
+                    <ShieldAlert className="w-8 h-8 text-slate-300" />
+                  </div>
+                  <div className="space-y-2 max-w-xs">
+                    <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest">No Identities Located</h3>
+                    <p className="text-[10px] font-bold text-slate-400 leading-relaxed uppercase tracking-widest">
+                      Audit synchronization required. Ensure the **SQL RLS Policies** are applied to the production database.
+                    </p>
+                  </div>
+                  <button 
+                    onClick={loadData}
+                    className="px-6 py-3 bg-slate-900 text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-black transition-all"
+                  >
+                    Sync Audit Pipeline
+                  </button>
+                </motion.div>
+              ) : selectedMember ? (
                 <motion.div
                   key={selectedMember.id}
                   initial={{ opacity: 0, y: 10 }}

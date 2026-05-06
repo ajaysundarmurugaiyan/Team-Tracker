@@ -35,42 +35,63 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
 
     const initSession = async () => {
       try {
-        // Defensive check for missing environment variables
         if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-          console.error('Supabase credentials missing. Check your environment variables.');
+          console.error('Lumina Sync: Critical configuration failure. Missing Supabase keys.');
           if (mounted) setLoading(false);
           return;
         }
 
-        const { data, error } = await supabase.auth.getSession();
-        if (error) {
-          console.error('Session retrieval error:', error);
-        }
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) throw error;
         
-        const currentUser = data?.session?.user ?? null;
+        const currentUser = session?.user ?? null;
         if (mounted) {
           setUser(currentUser);
           if (currentUser) {
-            await fetchProfile(currentUser.id);
+            // If user exists, fetch their profile immediately
+            const { data: profileData, error: profileError } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', currentUser.id)
+              .single();
+
+            if (profileError) {
+              if (profileError.code === 'PGRST116') {
+                await fetchProfile(currentUser.id); // Attempt lazy creation
+              } else {
+                console.error('Profile sync error:', profileError.message);
+                setLoading(false);
+              }
+            } else if (profileData) {
+              setProfile({
+                id: profileData.id,
+                employeeId: profileData.employee_id || 'UNKNOWN',
+                name: profileData.full_name || 'Anonymous',
+                role: profileData.role || 'member',
+                skills: profileData.skills || [],
+                totalLogs: 0
+              });
+              setLoading(false);
+            }
           } else {
             setLoading(false);
           }
         }
       } catch (err) {
-        console.error('Critical session init error:', err);
+        console.error('Lumina Sync: Authentication cycle failed.', err);
         if (mounted) setLoading(false);
       }
     };
 
     initSession();
 
-    const { data: authListener } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
       const currentUser = session?.user ?? null;
       if (mounted) {
         setUser(currentUser);
-        if (currentUser) {
+        if (currentUser && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION')) {
           await fetchProfile(currentUser.id);
-        } else {
+        } else if (event === 'SIGNED_OUT') {
           setProfile(null);
           setLoading(false);
         }
@@ -85,7 +106,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const fetchProfile = async (userId: string) => {
-    setLoading(true);
+    // Avoid double loading if already done
     try {
       const { data, error } = await supabase
         .from('profiles')
@@ -93,43 +114,33 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
         .eq('id', userId)
         .single();
 
-      if (error) {
-        if (error.code === 'PGRST116') {
-          console.warn('Profile not found, attempting lazy creation...');
-          // Attempt to create profile from auth metadata if trigger failed
-          const { data: { user } } = await supabase.auth.getUser();
-          if (user) {
-            const { data: newProfile, error: createError } = await supabase
-              .from('profiles')
-              .insert({
-                id: user.id,
-                full_name: user.user_metadata.full_name || 'Anonymous',
-                role: user.user_metadata.role || 'member',
-                employee_id: user.user_metadata.employee_id || 'UNKNOWN',
-                skills: []
-              })
-              .select()
-              .single();
-            
-            if (createError) {
-              console.error('Lazy profile creation failed:', createError);
-            } else if (newProfile) {
-              setProfile({
-                id: newProfile.id,
-                employeeId: newProfile.employee_id,
-                name: newProfile.full_name,
-                role: newProfile.role,
-                skills: newProfile.skills || [],
-                totalLogs: 0
-              });
-            }
+      if (error && error.code === 'PGRST116') {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: newProfile, error: createError } = await supabase
+            .from('profiles')
+            .insert({
+              id: user.id,
+              full_name: user.user_metadata.full_name || 'Anonymous User',
+              role: user.user_metadata.role || 'member',
+              employee_id: user.user_metadata.employee_id || 'UNKNOWN',
+              skills: []
+            })
+            .select()
+            .single();
+          
+          if (newProfile) {
+            setProfile({
+              id: newProfile.id,
+              employeeId: newProfile.employee_id,
+              name: newProfile.full_name,
+              role: newProfile.role,
+              skills: newProfile.skills || [],
+              totalLogs: 0
+            });
           }
-        } else {
-          toast.error(`Database error: ${error.message}`);
         }
-      }
-
-      if (data) {
+      } else if (data) {
         setProfile({
           id: data.id,
           employeeId: data.employee_id || 'UNKNOWN',
@@ -140,7 +151,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
         });
       }
     } catch (err) {
-      console.error('Fetch profile error:', err);
+      console.error('Profile retrieval failed:', err);
     } finally {
       setLoading(false);
     }

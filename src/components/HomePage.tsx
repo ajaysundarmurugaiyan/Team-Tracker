@@ -30,10 +30,19 @@ export default function HomePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-slate-200 border-t-slate-900 rounded-full animate-spin" />
-          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Synchronizing Identity...</span>
+      <div className="min-h-screen bg-white flex items-center justify-center p-8">
+        <div className="flex flex-col items-center gap-8 text-center">
+          <div className="relative">
+            <div className="w-20 h-20 border-2 border-slate-100 rounded-3xl" />
+            <div className="absolute inset-0 border-2 border-slate-900 rounded-3xl border-t-transparent animate-spin" />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <Zap className="w-8 h-8 text-slate-900 animate-pulse" />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-xl font-black text-slate-900 tracking-tight uppercase">Synchronizing Identity</h2>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] animate-pulse">Lumina Sync Security Protocol</p>
+          </div>
         </div>
       </div>
     );
@@ -41,9 +50,15 @@ export default function HomePage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Redirecting to Portal...</span>
+      <div className="min-h-screen bg-white flex items-center justify-center p-8">
+        <div className="flex flex-col items-center gap-6 text-center">
+          <div className="w-12 h-12 bg-slate-900 rounded-xl flex items-center justify-center shadow-xl shadow-slate-900/20">
+            <LogOut className="w-6 h-6 text-white" />
+          </div>
+          <div className="space-y-1">
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Session Terminated</p>
+            <p className="text-sm font-bold text-slate-900">Redirecting to Authorization Portal...</p>
+          </div>
         </div>
       </div>
     );

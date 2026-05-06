@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Users, Search, ChevronRight, ArrowLeft, ShieldAlert, CheckCircle2,
-  FileText, Zap, Award, Target, List, Brain, Sparkles
+  FileText, Zap, Award, Target, List, Brain, Sparkles, Code
 } from 'lucide-react';
 import { formatDate } from '@/lib/dates';
 import MemberHeatmap from '@/components/MemberHeatmap';

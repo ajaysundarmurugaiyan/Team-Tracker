@@ -22,6 +22,7 @@ export default function LeadDashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filter, setFilter] = useState<'all' | 'logged' | 'not-logged'>('all');
   const [selectedMember, setSelectedMember] = useState<any | null>(null);
+  const [selectedLog, setSelectedLog] = useState<any | null>(null);
   const [memberIntel, setMemberIntel] = useState<Record<string, string>>({});
 
   useEffect(() => {
@@ -325,7 +326,11 @@ export default function LeadDashboard() {
                       </h4>
                       <div className="space-y-4 max-h-[500px] overflow-y-auto pr-0 sm:pr-4 scrollbar-hide">
                         {selectedMember.logs.map((log: any) => (
-                          <div key={log.id} className="group p-6 bg-white border border-slate-100 rounded-2xl hover:border-slate-300 transition-all shadow-sm">
+                          <div 
+                            key={log.id} 
+                            onClick={() => setSelectedLog(log)}
+                            className="group p-6 bg-white border border-slate-100 rounded-2xl hover:border-slate-900 transition-all shadow-sm cursor-pointer active:scale-[0.98]"
+                          >
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
                               <div className="flex items-center gap-3">
                                 <span className="text-[10px] font-black text-slate-900 uppercase tracking-widest">{log.date}</span>
@@ -342,7 +347,7 @@ export default function LeadDashboard() {
                                 ))}
                               </div>
                             </div>
-                            <p className="text-xs font-bold text-slate-500 leading-relaxed group-hover:text-slate-900 transition-colors italic">
+                            <p className="text-xs font-bold text-slate-500 leading-relaxed group-hover:text-slate-900 transition-colors italic line-clamp-2">
                               &quot;{log.content}&quot;
                             </p>
                           </div>
@@ -365,6 +370,100 @@ export default function LeadDashboard() {
             </AnimatePresence>
           </div>
         </div>
+
+        {/* Log Detail Modal */}
+        <AnimatePresence>
+          {selectedLog && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setSelectedLog(null)}
+                className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+              />
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                className="relative w-full max-w-xl bg-white rounded-[2rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+              >
+                <div className="p-6 sm:p-8 border-b border-slate-100 flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center">
+                      <List className="w-5 h-5 text-slate-900" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm sm:text-base font-black text-slate-900 uppercase tracking-widest">Audit Detailed Analysis</h3>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{selectedLog.date} • {new Date(selectedLog.created_at).toLocaleTimeString()}</p>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => setSelectedLog(null)}
+                    className="p-2 hover:bg-slate-50 rounded-xl transition-all text-slate-400 hover:text-slate-900"
+                  >
+                    <ArrowLeft className="w-5 h-5 rotate-90 sm:rotate-0 sm:hidden" />
+                    <span className="hidden sm:inline text-[10px] font-black uppercase tracking-widest">Close</span>
+                  </button>
+                </div>
+
+                <div className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-8 scrollbar-hide">
+                  <section className="space-y-4">
+                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
+                      <Code className="w-4 h-4 text-slate-900" />
+                      Captured Competencies
+                    </h4>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedLog.skills?.map((s: string, i: number) => (
+                        <span key={i} className="px-3 py-1.5 bg-slate-50 border border-slate-100 text-[10px] font-black text-slate-900 rounded-lg uppercase tracking-wider">
+                          {s}
+                        </span>
+                      ))}
+                      {!selectedLog.skills?.length && <span className="text-[10px] font-bold text-slate-300 italic uppercase">No tech markers detected</span>}
+                    </div>
+                  </section>
+
+                  <section className="space-y-4">
+                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
+                      <Brain className="w-4 h-4 text-slate-900" />
+                      Work Audit Narrative
+                    </h4>
+                    <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100">
+                      <p className="text-sm font-bold text-slate-700 leading-relaxed italic">
+                        &quot;{selectedLog.content}&quot;
+                      </p>
+                    </div>
+                  </section>
+
+                  {selectedLog.learnings?.length > 0 && (
+                    <section className="space-y-4">
+                      <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
+                        <Sparkles className="w-4 h-4 text-slate-900" />
+                        Key Insights & Learnings
+                      </h4>
+                      <div className="grid gap-2">
+                        {selectedLog.learnings.map((l: string, i: number) => (
+                          <div key={i} className="flex items-center gap-3 p-4 bg-white border border-slate-100 rounded-xl">
+                            <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full shrink-0" />
+                            <p className="text-[11px] font-bold text-slate-600">{l}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </section>
+                  )}
+                </div>
+
+                <div className="p-6 bg-slate-900 text-white flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Target className="w-4 h-4 text-emerald-400" />
+                    <span className="text-[9px] font-black uppercase tracking-[0.2em]">Validated Performance Marker</span>
+                  </div>
+                  <div className="text-[8px] font-black text-slate-500 uppercase tracking-widest">ID: {selectedLog.id.slice(0, 8)}</div>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

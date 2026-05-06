@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useProfile } from '@/hooks/useProfile';
 import { useLogs } from '@/hooks/useLogs';
 import { useRouter } from 'next/navigation';
@@ -25,15 +25,7 @@ export default function LeadDashboard() {
   const [selectedLog, setSelectedLog] = useState<any | null>(null);
   const [memberIntel, setMemberIntel] = useState<Record<string, string>>({});
 
-  useEffect(() => {
-    if (!profileLoading && profile?.role !== 'lead') {
-      router.push('/');
-    } else if (profile?.role === 'lead') {
-      loadData();
-    }
-  }, [profile, profileLoading, router]);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     const [profilesData, logsData] = await Promise.all([
       fetchAllProfiles(),
@@ -42,7 +34,15 @@ export default function LeadDashboard() {
     setMembers(profilesData);
     setAllLogs(logsData);
     setLoading(false);
-  };
+  }, [fetchAllProfiles, fetchAllMembersLogs]);
+
+  useEffect(() => {
+    if (!profileLoading && profile?.role !== 'lead') {
+      router.push('/');
+    } else if (profile?.role === 'lead') {
+      loadData();
+    }
+  }, [profile, profileLoading, router, loadData]);
 
   const todayStr = formatDate(new Date());
   

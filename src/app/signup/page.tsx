@@ -25,10 +25,11 @@ export default function SignupPage() {
         password,
         options: { 
           data: { 
-            full_name: fullName, 
+            full_name: fullName.trim(),
             role: role,
             employee_id: employeeId.trim()
-          } 
+          },
+          redirectTo: typeof window !== 'undefined' ? `${window.location.origin}/login` : undefined
         },
       });
 

@@ -36,7 +36,7 @@ export default function SignupPage() {
         toast.error(error.message);
       } else {
         toast.success('Identity Created Successfully');
-        router.push('/login');
+        window.location.href = '/login'; 
       }
     } catch (err) {
       toast.error('System synchronization error. Please try again.');

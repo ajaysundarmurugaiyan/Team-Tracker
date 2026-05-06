@@ -95,9 +95,37 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
 
       if (error) {
         if (error.code === 'PGRST116') {
-          console.warn('Profile not found, trigger might be delayed or missing.');
+          console.warn('Profile not found, attempting lazy creation...');
+          // Attempt to create profile from auth metadata if trigger failed
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user) {
+            const { data: newProfile, error: createError } = await supabase
+              .from('profiles')
+              .insert({
+                id: user.id,
+                full_name: user.user_metadata.full_name || 'Anonymous',
+                role: user.user_metadata.role || 'member',
+                employee_id: user.user_metadata.employee_id || 'UNKNOWN',
+                skills: []
+              })
+              .select()
+              .single();
+            
+            if (createError) {
+              console.error('Lazy profile creation failed:', createError);
+            } else if (newProfile) {
+              setProfile({
+                id: newProfile.id,
+                employeeId: newProfile.employee_id,
+                name: newProfile.full_name,
+                role: newProfile.role,
+                skills: newProfile.skills || [],
+                totalLogs: 0
+              });
+            }
+          }
         } else {
-          toast.error(`Database error: ${error.message}. Please ensure SQL schema is executed.`);
+          toast.error(`Database error: ${error.message}`);
         }
       }
 
@@ -170,6 +198,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     await supabase.auth.signOut();
     setProfile(null);
     setUser(null);
+    window.location.href = '/login'; // Force clear state and redirect
   };
 
   return (

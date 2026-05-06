@@ -27,7 +27,7 @@ export default function LoginPage() {
         toast.error('Invalid Credentials. Verify ID and Password.');
       } else {
         toast.success('Access Granted');
-        router.push('/');
+        window.location.href = '/'; // Hard redirect for state initialization
       }
     } catch (err) {
       toast.error('Portal synchronization error.');

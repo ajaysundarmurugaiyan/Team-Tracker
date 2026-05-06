@@ -172,6 +172,7 @@ export default function LoggerWizard({ onComplete }: Props) {
                 <h4 className="text-sm font-black text-slate-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
                   <Sparkles className="w-4 h-4 text-blue-600" /> Tech Stack
                 </h4>
+                
                 <div className="flex flex-wrap gap-2 mb-10">
                   {SKILL_SUGGESTIONS.map(skill => (
                     <button
@@ -186,6 +187,54 @@ export default function LoggerWizard({ onComplete }: Props) {
                       {skill}
                     </button>
                   ))}
+                  
+                  {/* Render custom skills that aren't in suggestions */}
+                  {selectedSkills.filter(s => !SKILL_SUGGESTIONS.some(suggest => suggest.toLowerCase() === s.toLowerCase())).map(skill => (
+                    <button
+                      key={skill}
+                      onClick={() => toggleSkill(skill)}
+                      className="px-5 py-3 bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-200 rounded-xl text-xs font-bold transition-all border flex items-center gap-2"
+                    >
+                      {skill}
+                      <Check className="w-3 h-3" />
+                    </button>
+                  ))}
+                </div>
+
+                <div className="space-y-4">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Add Not Mentioned Skills</p>
+                  <div className="flex gap-3">
+                    <div className="relative flex-1 group">
+                      <Plus className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-blue-500 transition-colors" />
+                      <input
+                        type="text"
+                        value={customSkill}
+                        onChange={(e) => setCustomSkill(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            if (customSkill.trim()) {
+                              toggleSkill(customSkill.trim());
+                              setCustomSkill('');
+                            }
+                          }
+                        }}
+                        placeholder="ENTER CUSTOM SKILL (EX: GOOGLE CLOUD)..."
+                        className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:border-blue-500 transition-all font-black text-slate-900 text-[10px] tracking-widest placeholder:text-slate-200"
+                      />
+                    </div>
+                    <button
+                      onClick={() => {
+                        if (customSkill.trim()) {
+                          toggleSkill(customSkill.trim());
+                          setCustomSkill('');
+                        }
+                      }}
+                      className="px-6 bg-slate-900 text-white rounded-2xl hover:bg-black transition-all font-black uppercase tracking-widest text-[10px] flex items-center justify-center shadow-lg shadow-slate-900/10"
+                    >
+                      Add
+                    </button>
+                  </div>
                 </div>
               </div>
             </motion.div>

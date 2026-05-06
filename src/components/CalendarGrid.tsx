@@ -151,8 +151,7 @@ export default function CalendarGrid() {
             <div key={dateStr} className="bg-white h-full">
               <CalendarCell 
                 date={day} 
-                intensity={getIntensity(dayLogs)} 
-                logCount={dayLogs.length}
+                logs={dayLogs}
                 onClick={() => dayLogs.length > 0 && setSelectedDate(dateStr)} 
               />
             </div>

@@ -97,7 +97,7 @@ export default function LoggerWizard({ onComplete }: Props) {
       });
       triggerConfetti();
       toast.success('Work Log Committed');
-      setTimeout(() => router.push('/'), 2500);
+      setTimeout(() => router.replace('/'), 2500);
     } catch (error) {
       toast.error('Synchronization failed');
     } finally {

@@ -1,16 +1,25 @@
 'use client';
 import { motion } from 'framer-motion';
+import { WorkLog } from '@/types/log';
 
 interface Props {
   date: Date;
-  intensity: string;
-  logCount: number;
+  logs: WorkLog[];
   onClick: () => void;
 }
 
-export default function CalendarCell({ date, intensity, logCount, onClick }: Props) {
+export default function CalendarCell({ date, logs, onClick }: Props) {
   const isToday = new Date().toDateString() === date.toDateString();
   const day = date.getDate();
+  const logCount = logs.length;
+
+  const getLogIntensity = (log: WorkLog) => {
+    const score = log.skills.length + (log.content.length / 50);
+    if (score > 15) return 'bg-emerald-700';
+    if (score > 10) return 'bg-emerald-600';
+    if (score > 5) return 'bg-emerald-500';
+    return 'bg-emerald-400';
+  };
 
   return (
     <motion.button
@@ -32,18 +41,20 @@ export default function CalendarCell({ date, intensity, logCount, onClick }: Pro
       </div>
       
       <div className="flex-1 w-full flex items-end">
-        <div className={`w-full h-1.5 rounded-full transition-all duration-500 ${intensity} ${
-          logCount > 0 ? 'opacity-100' : 'opacity-20'
-        } group-hover:h-2`} />
-      </div>
-
-      {logCount > 1 && (
-        <div className="absolute top-2 right-2 flex gap-0.5">
-          {Array.from({ length: Math.min(logCount, 3) }).map((_, i) => (
-            <div key={i} className="w-1 h-1 rounded-full bg-slate-200" />
-          ))}
+        <div className="w-full h-1.5 flex gap-[1px] rounded-full overflow-hidden transition-all duration-500 group-hover:h-2">
+          {logCount === 0 ? (
+            <div className="flex-1 h-full bg-slate-100 opacity-20" />
+          ) : (
+            logs.map((log, i) => (
+              <div 
+                key={log.id} 
+                className={`h-full flex-1 ${getLogIntensity(log)} transition-all duration-500`}
+                title={`${log.date} Audit`}
+              />
+            ))
+          )}
         </div>
-      )}
+      </div>
     </motion.button>
   );
 }

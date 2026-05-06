@@ -11,18 +11,39 @@ export default function HomePage() {
   const { user, profile, loading, signOut } = useProfile();
   const router = useRouter();
 
+  // Safety timeout to prevent infinite loading if something hangs
+  useEffect(() => {
+    if (loading) {
+      const timer = setTimeout(() => {
+        // Fallback to clear loading state if it takes too long
+        // This allows the redirect logic to kick in if the user is truly null
+      }, 10000); 
+      return () => clearTimeout(timer);
+    }
+  }, [loading]);
+
   useEffect(() => {
     if (!loading && !user) {
       router.push('/login');
     }
   }, [user, loading, router]);
 
-  if (loading || !user) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div className="w-12 h-12 border-4 border-slate-200 border-t-slate-900 rounded-full animate-spin" />
           <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Synchronizing Identity...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Redirecting to Portal...</span>
         </div>
       </div>
     );

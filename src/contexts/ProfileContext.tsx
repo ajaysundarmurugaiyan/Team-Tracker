@@ -28,10 +28,10 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     // This prevents the "Synchronizing Identity" hang in production if Supabase is unreachable
     const safetyTimeout = setTimeout(() => {
       if (mounted && loading) {
-        console.warn('Identity synchronization timed out. Forcing loading to false.');
+        console.warn('Lumina Sync: Connection latency detected. Forcing fallback.');
         setLoading(false);
       }
-    }, 10000);
+    }, 5000);
 
     const initSession = async () => {
       try {

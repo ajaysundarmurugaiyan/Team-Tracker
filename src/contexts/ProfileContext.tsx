@@ -52,49 +52,67 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     const initSession = async () => {
       try {
         if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-          console.error('Team Tracker: Critical configuration failure. Missing Supabase keys.');
+          console.error('Team Tracker: Configuration Missing. Verify environment variables.');
           if (mounted) setLoading(false);
           return;
         }
 
-        const { data: { session }, error } = await supabase.auth.getSession();
-        if (error) throw error;
+        // Try to get session with a timeout
+        const sessionPromise = supabase.auth.getSession();
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Session fetch timeout')), 5000)
+        );
+
+        const { data: { session }, error } = await Promise.race([sessionPromise, timeoutPromise]) as any;
+        
+        if (error) {
+          console.error('Session error:', error);
+          if (mounted) setLoading(false);
+          return;
+        }
         
         const currentUser = session?.user ?? null;
         if (mounted) {
           setUser(currentUser);
           if (currentUser) {
-            // If user exists, fetch their profile immediately
-            const { data: profileData, error: profileError } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('id', currentUser.id)
-              .single();
+            // If user exists, fetch their profile
+            try {
+              const { data: profileData, error: profileError } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', currentUser.id)
+                .single();
 
-            if (profileError) {
-              if (profileError.code === 'PGRST116') {
-                await fetchProfile(currentUser.id); // Attempt lazy creation
-              } else {
-                console.error('Profile sync error:', profileError.message);
+              if (profileError) {
+                console.warn('Profile sync warning:', profileError.message);
+                if (profileError.code === 'PGRST116' || profileError.status === 406 || profileError.status === 403) {
+                  // If profile is missing or forbidden, attempt to recover or lazy-create
+                  await fetchProfile(currentUser.id);
+                } else {
+                  setLoading(false);
+                }
+              } else if (profileData) {
+                setProfile({
+                  id: profileData.id,
+                  employeeId: profileData.employee_id || 'UNKNOWN',
+                  name: profileData.full_name || 'Anonymous',
+                  role: profileData.role || 'member',
+                  skills: profileData.skills || [],
+                  totalLogs: 0
+                });
                 setLoading(false);
               }
-            } else if (profileData) {
-              setProfile({
-                id: profileData.id,
-                employeeId: profileData.employee_id || 'UNKNOWN',
-                name: profileData.full_name || 'Anonymous',
-                role: profileData.role || 'member',
-                skills: profileData.skills || [],
-                totalLogs: 0
-              });
+            } catch (err) {
+              console.error('Profile fetch internal error:', err);
               setLoading(false);
             }
           } else {
+            // No user, no wait
             setLoading(false);
           }
         }
       } catch (err) {
-        console.error('Team Tracker: Authentication cycle failed.', err);
+        console.error('Team Tracker: Auth initialization failed.', err);
         if (mounted) setLoading(false);
       }
     };
@@ -102,14 +120,20 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     initSession();
 
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Team Tracker Auth Event:', event);
       const currentUser = session?.user ?? null;
+      
       if (mounted) {
         setUser(currentUser);
-        if (currentUser && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION')) {
-          setProfile(null); // Clear any stale profile data during transition
-          await fetchProfile(currentUser.id);
+        if (currentUser && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED')) {
+          if (!profile || profile.id !== currentUser.id) {
+            await fetchProfile(currentUser.id);
+          }
         } else if (event === 'SIGNED_OUT') {
           setProfile(null);
+          setLoading(false);
+          if (typeof window !== 'undefined') window.location.replace('/login');
+        } else if (!currentUser) {
           setLoading(false);
         }
       }

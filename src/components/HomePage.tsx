@@ -6,17 +6,18 @@ import { useProfile } from '@/hooks/useProfile';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Plus, Zap, LogOut, Users } from 'lucide-react';
+import Loader from '@/components/Loader';
+import NetworkError from '@/components/NetworkError';
 
 export default function HomePage() {
-  const { user, profile, loading, signOut } = useProfile();
+  const { user, profile, loading, isOnline, connectionError, signOut } = useProfile();
   const router = useRouter();
 
   // Safety timeout to prevent infinite loading if something hangs
   useEffect(() => {
     if (loading) {
       const timer = setTimeout(() => {
-        // Fallback to clear loading state if it takes too long
-        // This allows the redirect logic to kick in if the user is truly null
+        // Fallback handled in ProfileContext
       }, 10000); 
       return () => clearTimeout(timer);
     }
@@ -31,19 +32,24 @@ export default function HomePage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center p-8">
-        <div className="flex flex-col items-center gap-8 text-center">
-          <div className="relative">
-            <div className="w-20 h-20 border-2 border-slate-100 rounded-3xl" />
-            <div className="absolute inset-0 border-2 border-slate-900 rounded-3xl border-t-transparent animate-spin" />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <Zap className="w-8 h-8 text-slate-900 animate-pulse" />
-            </div>
-          </div>
-          <div className="space-y-2">
-            <h2 className="text-xl font-black text-slate-900 tracking-tight uppercase">Synchronizing Identity</h2>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] animate-pulse">Lumina Sync Security Protocol</p>
-          </div>
-        </div>
+        <Loader label="Synchronizing Identity" sublabel="Team Tracker Security" />
+      </div>
+    );
+  }
+
+  if (!isOnline || connectionError === 'offline') {
+    return <NetworkError type="offline" />;
+  }
+
+  if (connectionError === 'slow') {
+    return <NetworkError type="slow" />;
+  }
+
+  // If loading finished but profile is missing (and we're online), it might be a sync issue or slow net
+  if (!profile && user) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center p-8">
+        <Loader label="Finalizing Sync" sublabel="Waiting for profile data..." />
       </div>
     );
   }
@@ -74,7 +80,7 @@ export default function HomePage() {
                 <Zap className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
               </div>
               <h1 className="text-2xl sm:text-4xl font-black font-outfit tracking-tight text-slate-900">
-                LUMINA<span className="text-slate-400">SYNC</span>
+                TEAM<span className="text-slate-400">TRACKER</span>
               </h1>
             </div>
             <p className="text-[8px] sm:text-sm font-bold text-slate-400 uppercase tracking-[0.2em] sm:tracking-[0.3em] max-w-md">

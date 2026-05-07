@@ -3,8 +3,8 @@ import './globals.css';
 import { Providers } from './providers';
 
 export const metadata: Metadata = {
-  title: 'WorkLog AI',
-  description: 'AI-powered daily work logging',
+  title: 'Team Tracker',
+  description: 'High-Precision Performance Auditing & Skill Mapping',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

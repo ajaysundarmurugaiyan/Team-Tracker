@@ -9,6 +9,8 @@ interface ProfileContextType {
   profile: UserProfile | null;
   user: User | null;
   loading: boolean;
+  isOnline: boolean;
+  connectionError: 'offline' | 'slow' | null;
   updateSkills: (newSkills: string[]) => Promise<void>;
   signOut: () => Promise<void>;
   fetchAllProfiles: () => Promise<any[]>;
@@ -20,23 +22,37 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isOnline, setIsOnline] = useState(true);
+  const [connectionError, setConnectionError] = useState<'offline' | 'slow' | null>(null);
 
   useEffect(() => {
     let mounted = true;
 
-    // Safety timeout: if after 10 seconds we are still loading, force it to false
-    // This prevents the "Synchronizing Identity" hang in production if Supabase is unreachable
     const safetyTimeout = setTimeout(() => {
       if (mounted && loading) {
-        console.warn('Lumina Sync: Connection latency detected. Forcing fallback.');
+        console.warn('Team Tracker: Connection latency detected.');
+        setConnectionError('slow');
         setLoading(false);
       }
-    }, 5000);
+    }, 8000);
+
+    const handleOnline = () => {
+      setIsOnline(true);
+      setConnectionError(null);
+    };
+    const handleOffline = () => {
+      setIsOnline(false);
+      setConnectionError('offline');
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    if (!navigator.onLine) handleOffline();
 
     const initSession = async () => {
       try {
         if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-          console.error('Lumina Sync: Critical configuration failure. Missing Supabase keys.');
+          console.error('Team Tracker: Critical configuration failure. Missing Supabase keys.');
           if (mounted) setLoading(false);
           return;
         }
@@ -78,7 +94,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
           }
         }
       } catch (err) {
-        console.error('Lumina Sync: Authentication cycle failed.', err);
+        console.error('Team Tracker: Authentication cycle failed.', err);
         if (mounted) setLoading(false);
       }
     };
@@ -103,6 +119,8 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       mounted = false;
       clearTimeout(safetyTimeout);
       authListener?.subscription.unsubscribe();
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
     };
   }, []);
 
@@ -214,7 +232,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <ProfileContext.Provider value={{ profile, user, loading, updateSkills, signOut, fetchAllProfiles }}>
+    <ProfileContext.Provider value={{ profile, user, loading, isOnline, connectionError, updateSkills, signOut, fetchAllProfiles }}>
       {children}
     </ProfileContext.Provider>
   );

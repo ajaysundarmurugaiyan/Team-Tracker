@@ -19,13 +19,14 @@ export default function ProfileCard() {
     const currentYear = now.getFullYear();
 
     const monthlyLogs = logs.filter(l => {
-      const d = new Date(l.createdAt);
-      return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+      // l.date is "YYYY-MM-DD"
+      const [y, m] = l.date.split('-').map(Number);
+      return y === currentYear && (m - 1) === currentMonth;
     });
 
     const yearlyLogs = logs.filter(l => {
-      const d = new Date(l.createdAt);
-      return d.getFullYear() === currentYear;
+      const [y] = l.date.split('-').map(Number);
+      return y === currentYear;
     });
 
     const uniqueMonthlyDays = new Set(monthlyLogs.map(l => l.date)).size;

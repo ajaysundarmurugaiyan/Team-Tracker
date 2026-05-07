@@ -17,7 +17,7 @@ export default function LoginPage() {
     setIsLoading(true);
     
     try {
-      const virtualEmail = `${employeeId.trim().toLowerCase()}@lumina-sync.com`;
+      const virtualEmail = `${employeeId.trim().toLowerCase()}@team-tracker.com`;
       const { error } = await (supabase.auth as any).signInWithPassword({ 
         email: virtualEmail, 
         password 
@@ -55,7 +55,7 @@ export default function LoginPage() {
               <Zap className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
             </div>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black tracking-tighter text-slate-900">LUMINA SYNC</h1>
+          <h1 className="text-2xl sm:text-3xl font-black tracking-tighter text-slate-900">TEAM TRACKER</h1>
           <p className="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] sm:tracking-[0.3em]">Corporate Access Portal</p>
         </div>
 

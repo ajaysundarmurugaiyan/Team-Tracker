@@ -18,16 +18,31 @@ export default function LoginPage() {
     
     try {
       const virtualEmail = `${employeeId.trim().toLowerCase()}@team-tracker.com`;
-      const { error } = await (supabase.auth as any).signInWithPassword({ 
+      const { data, error } = await (supabase.auth as any).signInWithPassword({ 
         email: virtualEmail, 
         password 
       });
 
       if (error) {
         toast.error('Invalid Credentials. Verify ID and Password.');
-      } else {
-        toast.success('Access Granted');
-        window.location.replace('/'); // Hard redirect for state initialization and history clearing
+      } else if (data.user) {
+        // Enforce role-based portal isolation
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', data.user.id)
+          .single();
+
+        if (profile?.role === 'lead') {
+          toast.info('Lead identity detected. Redirecting to Lead Portal...');
+          window.location.replace('/lead-login');
+        } else if (profile?.role === 'manager') {
+          toast.info('Executive identity detected. Redirecting to Manager Portal...');
+          window.location.replace('/manager-login');
+        } else {
+          toast.success('Access Granted');
+          window.location.replace('/'); 
+        }
       }
     } catch (err) {
       toast.error('Portal synchronization error.');
@@ -67,9 +82,11 @@ export default function LoginPage() {
                 <Hash className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-slate-900 transition-colors" />
                 <input
                   type="text"
-                  placeholder="EX: ID-001"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  placeholder="EX: 102938"
                   value={employeeId}
-                  onChange={(e) => setEmployeeId(e.target.value)}
+                  onChange={(e) => setEmployeeId(e.target.value.replace(/[^0-9]/g, ''))}
                   className="w-full pl-11 sm:pl-12 pr-4 py-3.5 sm:py-4 bg-slate-50 border border-slate-100 rounded-xl sm:rounded-2xl focus:outline-none focus:border-slate-900 transition-all font-bold text-slate-800 text-sm placeholder:text-slate-200"
                   required
                 />
@@ -103,19 +120,13 @@ export default function LoginPage() {
               {isLoading && <div className="absolute inset-0 bg-slate-800 animate-pulse" />}
             </button>
             
-            <div className="flex items-center justify-between px-1">
+            <div className="flex items-center justify-center px-1">
               <button
                 type="button"
                 onClick={() => router.push('/signup')}
                 className="text-[9px] font-black text-slate-400 uppercase tracking-widest hover:text-slate-900 transition-colors"
               >
                 Request Enrollment
-              </button>
-              <button
-                type="button"
-                className="text-[9px] font-black text-slate-400 uppercase tracking-widest hover:text-slate-900 transition-colors"
-              >
-                Recovery
               </button>
             </div>
           </div>

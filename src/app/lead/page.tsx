@@ -6,13 +6,14 @@ import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Users, Search, ChevronRight, ArrowLeft, ShieldAlert, CheckCircle2,
-  FileText, Zap, Award, Target, List, Brain, Sparkles, Code
+  FileText, Zap, Award, Target, List, Brain, Sparkles, Code, Plus
 } from 'lucide-react';
 import { formatDate } from '@/lib/dates';
 import MemberHeatmap from '@/components/MemberHeatmap';
+import Loader from '@/components/Loader';
 
 export default function LeadDashboard() {
-  const { profile, loading: profileLoading, fetchAllProfiles } = useProfile();
+  const { profile, loading: profileLoading, fetchAllProfiles, addMemberToLead } = useProfile();
   const { fetchAllMembersLogs } = useLogs();
   const router = useRouter();
 
@@ -35,6 +36,22 @@ export default function LeadDashboard() {
     setAllLogs(logsData);
     setLoading(false);
   }, [fetchAllProfiles, fetchAllMembersLogs]);
+
+  const [newMemberId, setNewMemberId] = useState('');
+  const [isAddingMember, setIsAddingMember] = useState(false);
+
+  const handleAddMember = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newMemberId) return;
+    
+    setIsAddingMember(true);
+    const success = await addMemberToLead(newMemberId);
+    if (success) {
+      setNewMemberId('');
+      loadData();
+    }
+    setIsAddingMember(false);
+  };
 
   useEffect(() => {
     if (!profileLoading && profile?.role !== 'lead') {
@@ -146,13 +163,7 @@ export default function LeadDashboard() {
   if (profileLoading || loading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="flex flex-col items-center gap-6">
-          <div className="relative">
-            <div className="w-16 h-16 border-2 border-slate-100 rounded-2xl" />
-            <div className="absolute inset-0 border-2 border-slate-900 rounded-2xl border-t-transparent animate-spin" />
-          </div>
-          <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] animate-pulse">Compiling Intelligence...</span>
-        </div>
+        <Loader label="Lead Operations" sublabel="Synchronizing Unit Intelligence" />
       </div>
     );
   }
@@ -205,9 +216,30 @@ export default function LeadDashboard() {
         <div className="flex flex-col lg:flex-row gap-8 lg:gap-16">
           {/* Left Sidebar: Member Directory */}
           <div className="w-full lg:w-80 shrink-0 space-y-8">
-            <div className="flex items-center justify-between px-1">
-              <h2 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Team Directory</h2>
-              <span className="text-[10px] font-black text-slate-900">{filteredMembers.length}</span>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between px-1">
+                <h2 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Team Directory</h2>
+                <span className="text-[10px] font-black text-slate-900">{filteredMembers.length}</span>
+              </div>
+              
+              {/* Add Member Form */}
+              <form onSubmit={handleAddMember} className="relative group">
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="ADD MEMBER BY ID..."
+                  value={newMemberId}
+                  onChange={(e) => setNewMemberId(e.target.value.replace(/[^0-9]/g, ''))}
+                  className="w-full pl-4 pr-12 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:outline-none focus:border-slate-900 transition-all font-black text-[10px] tracking-widest placeholder:text-slate-300"
+                />
+                <button
+                  type="submit"
+                  disabled={isAddingMember || !newMemberId}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-slate-900 text-white rounded-xl disabled:bg-slate-200 transition-colors"
+                >
+                  <Plus className="w-4 h-4" />
+                </button>
+              </form>
             </div>
             
             <div className="space-y-2 max-h-[400px] lg:max-h-[700px] overflow-y-auto pr-2 scrollbar-hide">

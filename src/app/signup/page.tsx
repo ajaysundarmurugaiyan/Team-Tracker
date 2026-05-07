@@ -2,7 +2,7 @@
 import { useState, FormEvent } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
-import { User, Lock, ArrowRight, Zap, Hash, ShieldCheck, Sparkles } from 'lucide-react';
+import { User, Lock, ArrowRight, Zap, Hash, Sparkles, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 
@@ -10,7 +10,7 @@ export default function SignupPage() {
   const [employeeId, setEmployeeId] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
-  const [role, setRole] = useState<'member' | 'lead'>('member');
+  const [role, setRole] = useState<'member' | 'lead' | 'manager'>('member');
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
@@ -29,7 +29,7 @@ export default function SignupPage() {
             role: role,
             employee_id: employeeId.trim()
           },
-          redirectTo: typeof window !== 'undefined' ? `${window.location.origin}/login` : undefined
+          emailRedirectTo: typeof window !== 'undefined' ? `${window.location.origin}/login` : undefined
         },
       });
 
@@ -37,7 +37,7 @@ export default function SignupPage() {
         toast.error(error.message);
       } else if (data.user) {
         // Explicitly create profile to bypass potential trigger failures in production
-        await supabase.from('profiles').upsert({
+        const { error: profileError } = await supabase.from('profiles').upsert({
           id: data.user.id,
           full_name: fullName.trim(),
           role: role,
@@ -45,10 +45,26 @@ export default function SignupPage() {
           skills: []
         });
 
+        if (profileError) {
+          console.error('Profile creation error:', profileError);
+          toast.error('Portal synchronization failed. Database access denied.');
+          setIsLoading(false);
+          return; // Stop here so user can see the error
+        }
+        
         toast.success('Identity Created Successfully');
-        window.location.replace('/login'); 
+        
+        // Intelligent Redirection based on role
+        if (role === 'lead') {
+          window.location.replace('/lead-login');
+        } else if (role === 'manager') {
+          window.location.replace('/manager-login');
+        } else {
+          window.location.replace('/login');
+        }
       }
-    } catch (err) {
+    } catch (error) {
+      console.error('Signup system error:', error);
       toast.error('System synchronization error. Please try again.');
     } finally {
       setIsLoading(false);
@@ -103,9 +119,11 @@ export default function SignupPage() {
                 <Hash className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-slate-900 transition-colors" />
                 <input
                   type="text"
-                  placeholder="EX: ID-001"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  placeholder="EX: 102938"
                   value={employeeId}
-                  onChange={(e) => setEmployeeId(e.target.value)}
+                  onChange={(e) => setEmployeeId(e.target.value.replace(/[^0-9]/g, ''))}
                   className="w-full pl-11 sm:pl-12 pr-4 py-3.5 sm:py-4 bg-slate-50 border border-slate-100 rounded-xl sm:rounded-2xl focus:outline-none focus:border-slate-900 transition-all font-bold text-slate-800 text-sm placeholder:text-slate-200"
                   required
                 />
@@ -115,20 +133,27 @@ export default function SignupPage() {
             {/* Access Tier */}
             <div className="space-y-1.5 sm:space-y-2">
               <label className="text-[10px] sm:text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Operations Role</label>
-              <div className="flex gap-2 p-1 bg-slate-50 border border-slate-100 rounded-xl sm:rounded-2xl">
+              <div className="grid grid-cols-3 gap-2 p-1.5 bg-slate-50 border border-slate-100 rounded-2xl">
                 <button
                   type="button"
                   onClick={() => setRole('member')}
-                  className={`flex-1 py-2 text-[9px] sm:text-[10px] font-black uppercase tracking-widest transition-all rounded-lg sm:rounded-xl ${role === 'member' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                  className={`py-2.5 text-[8px] sm:text-[9px] font-black uppercase tracking-widest transition-all rounded-xl ${role === 'member' ? 'bg-white text-slate-900 shadow-md border border-slate-200' : 'text-slate-400 hover:text-slate-600'}`}
                 >
                   Member
                 </button>
                 <button
                   type="button"
                   onClick={() => setRole('lead')}
-                  className={`flex-1 py-2 text-[9px] sm:text-[10px] font-black uppercase tracking-widest transition-all rounded-lg sm:rounded-xl ${role === 'lead' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                  className={`py-2.5 text-[8px] sm:text-[9px] font-black uppercase tracking-widest transition-all rounded-xl ${role === 'lead' ? 'bg-white text-slate-900 shadow-md border border-slate-200' : 'text-slate-400 hover:text-slate-600'}`}
                 >
                   Lead
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRole('manager')}
+                  className={`py-2.5 text-[8px] sm:text-[9px] font-black uppercase tracking-widest transition-all rounded-xl ${role === 'manager' ? 'bg-white text-slate-900 shadow-md border border-slate-200' : 'text-slate-400 hover:text-slate-600'}`}
+                >
+                  Manager
                 </button>
               </div>
             </div>

@@ -11,6 +11,7 @@ interface LogContextType {
   getLogsByDate: (date: string) => WorkLog[];
   fetchAllMembersLogs: () => Promise<WorkLog[]>;
   loading: boolean;
+  fetchLogsForUser: (userId: string) => Promise<WorkLog[]>;
 }
 
 export const LogContext = createContext<LogContextType | null>(null);
@@ -151,11 +152,37 @@ export function LogProvider({ children }: { children: ReactNode }) {
     return [];
   };
 
+  const fetchLogsForUser = async (userId: string): Promise<WorkLog[]> => {
+    if (!profile || (profile.role !== 'manager' && profile.role !== 'lead' && profile.id !== userId)) return [];
+
+    try {
+      const { data, error } = await supabase
+        .from('logs')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      return (data || []).map(l => ({
+        id: l.id,
+        date: l.date,
+        content: l.content,
+        skills: l.skills || [],
+        learnings: l.learnings || [],
+        createdAt: new Date(l.created_at).getTime()
+      }));
+    } catch (err) {
+      console.error('Fetch user logs error:', err);
+      return [];
+    }
+  };
+
   const getLogsByDate = (date: string) => 
     logs.filter(l => l.date === date).sort((a, b) => b.createdAt - a.createdAt);
 
   return (
-    <LogContext.Provider value={{ logs, addLog, getLogsByDate, fetchAllMembersLogs, loading }}>
+    <LogContext.Provider value={{ logs, addLog, getLogsByDate, fetchAllMembersLogs, loading, fetchLogsForUser }}>
       {children}
     </LogContext.Provider>
   );

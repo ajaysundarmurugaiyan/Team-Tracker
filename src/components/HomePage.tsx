@@ -57,15 +57,7 @@ export default function HomePage() {
   if (!user) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center p-8">
-        <div className="flex flex-col items-center gap-6 text-center">
-          <div className="w-12 h-12 bg-slate-900 rounded-xl flex items-center justify-center shadow-xl shadow-slate-900/20">
-            <LogOut className="w-6 h-6 text-white" />
-          </div>
-          <div className="space-y-1">
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Session Terminated</p>
-            <p className="text-sm font-bold text-slate-900">Redirecting to Authorization Portal...</p>
-          </div>
-        </div>
+        <Loader label="Session Terminated" sublabel="Returning to secure portal" />
       </div>
     );
   }

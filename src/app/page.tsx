@@ -32,15 +32,7 @@ export default function Page() {
   if (!user) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center p-8">
-        <div className="flex flex-col items-center gap-8 text-center animate-pulse">
-          <div className="w-16 h-16 bg-slate-900 rounded-[2rem] flex items-center justify-center shadow-2xl shadow-slate-900/20">
-            <Zap className="w-8 h-8 text-white fill-white" />
-          </div>
-          <div className="space-y-2">
-            <h2 className="text-xl font-black text-slate-900 tracking-tight uppercase">Redirecting</h2>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Establishing Access Link v1.5.2</p>
-          </div>
-        </div>
+        <Loader label="Redirecting" sublabel="Establishing Access Link v2.0" />
       </div>
     );
   }

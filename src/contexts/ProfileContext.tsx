@@ -14,6 +14,8 @@ interface ProfileContextType {
   updateSkills: (newSkills: string[]) => Promise<void>;
   signOut: () => Promise<void>;
   fetchAllProfiles: () => Promise<any[]>;
+  addMemberToLead: (employeeId: string) => Promise<boolean>;
+  fetchManagerStats: () => Promise<any>;
 }
 
 export const ProfileContext = createContext<ProfileContextType | null>(null);
@@ -27,14 +29,6 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let mounted = true;
-
-    const safetyTimeout = setTimeout(() => {
-      if (mounted && loading) {
-        console.warn('Team Tracker: Connection latency detected.');
-        setConnectionError('slow');
-        setLoading(false);
-      }
-    }, 8000);
 
     const handleOnline = () => {
       setIsOnline(true);
@@ -60,7 +54,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
         // Try to get session with a timeout
         const sessionPromise = supabase.auth.getSession();
         const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Session fetch timeout')), 5000)
+          setTimeout(() => reject(new Error('Session fetch timeout')), 20000)
         );
 
         const { data: { session }, error } = await Promise.race([sessionPromise, timeoutPromise]) as any;
@@ -84,8 +78,8 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
                 .single();
 
               if (profileError) {
-                console.warn('Profile sync warning:', profileError.message);
-                if (profileError.code === 'PGRST116' || profileError.status === 406 || profileError.status === 403) {
+                console.warn('Profile sync warning:', profileError.message, profileError.status);
+                if (profileError.code === 'PGRST116' || profileError.status === 406 || profileError.status === 403 || profileError.status === 401) {
                   // If profile is missing or forbidden, attempt to recover or lazy-create
                   await fetchProfile(currentUser.id);
                 } else {
@@ -141,7 +135,6 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
 
     return () => {
       mounted = false;
-      clearTimeout(safetyTimeout);
       authListener?.subscription.unsubscribe();
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
@@ -157,22 +150,31 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
         .eq('id', userId)
         .single();
 
-      if (error && error.code === 'PGRST116') {
+      if (error && (error.code === 'PGRST116' || error.status === 403 || error.status === 406)) {
+        console.log('Profile missing or inaccessible, attempting recovery...');
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
-          const { data: newProfile } = await supabase
+          const profileToInsert = {
+            id: user.id,
+            full_name: user.user_metadata.full_name || 'Anonymous User',
+            role: user.user_metadata.role || 'member',
+            employee_id: user.user_metadata.employee_id || 'UNKNOWN',
+            skills: []
+          };
+
+          const { data: newProfile, error: insertError } = await supabase
             .from('profiles')
-            .insert({
-              id: user.id,
-              full_name: user.user_metadata.full_name || 'Anonymous User',
-              role: user.user_metadata.role || 'member',
-              employee_id: user.user_metadata.employee_id || 'UNKNOWN',
-              skills: []
-            })
+            .insert(profileToInsert)
             .select()
             .single();
           
-          if (newProfile) {
+          if (insertError) {
+            console.error('Profile recovery failed:', insertError);
+            // If insert also fails with 403, it's definitely RLS
+            if (insertError.status === 403) {
+              toast.error('Database access denied. Please check RLS policies.');
+            }
+          } else if (newProfile) {
             setProfile({
               id: newProfile.id,
               employeeId: newProfile.employee_id,
@@ -183,6 +185,8 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
             });
           }
         }
+      } else if (error) {
+        console.error('Profile fetch error:', error);
       } else if (data) {
         setProfile({
           id: data.id,
@@ -234,18 +238,88 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   };
 
   const fetchAllProfiles = async () => {
-    if (profile?.role !== 'lead') return [];
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('role', 'member')
-      .order('full_name');
+    if (!profile || (profile.role !== 'lead' && profile.role !== 'manager')) return [];
+    
+    let query = supabase.from('profiles').select('*');
+    
+    if (profile.role === 'lead') {
+      // Leads only see members assigned to them
+      query = query.eq('lead_id', profile.id);
+    }
+    
+    const { data, error } = await query.order('full_name');
     
     if (error) {
       toast.error('Failed to fetch team profiles');
       return [];
     }
     return data || [];
+  };
+
+  const addMemberToLead = async (employeeId: string): Promise<boolean> => {
+    if (!profile || profile.role !== 'lead') return false;
+
+    try {
+      // 1. Find the member by employee ID
+      const { data: member, error: findError } = await supabase
+        .from('profiles')
+        .select('id, lead_id')
+        .eq('employee_id', employeeId)
+        .single();
+
+      if (findError || !member) {
+        toast.error('Member not found with this ID');
+        return false;
+      }
+
+      if (member.lead_id) {
+        toast.error('Member is already assigned to a lead');
+        return false;
+      }
+
+      // 2. Assign lead_id to this profile
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ lead_id: profile.id })
+        .eq('id', member.id);
+
+      if (updateError) {
+        toast.error('Failed to add member to group');
+        return false;
+      }
+
+      toast.success('Member added successfully');
+      return true;
+    } catch (err) {
+      console.error('Add member error:', err);
+      return false;
+    }
+  };
+
+  const fetchManagerStats = async () => {
+    if (!profile || profile.role !== 'manager') return null;
+
+    try {
+      const { data: leads, error: leadsError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('role', 'lead');
+
+      const { data: members, error: membersError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('role', 'member');
+
+      if (leadsError || membersError) throw new Error('Failed to fetch stats');
+
+      return {
+        leads: leads || [],
+        members: members || []
+      };
+    } catch (err) {
+      toast.error('Failed to fetch manager intelligence');
+      return null;
+    }
   };
 
   const signOut = async () => {
@@ -256,7 +330,10 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <ProfileContext.Provider value={{ profile, user, loading, isOnline, connectionError, updateSkills, signOut, fetchAllProfiles }}>
+    <ProfileContext.Provider value={{ 
+      profile, user, loading, isOnline, connectionError, 
+      updateSkills, signOut, fetchAllProfiles, addMemberToLead, fetchManagerStats 
+    }}>
       {children}
     </ProfileContext.Provider>
   );

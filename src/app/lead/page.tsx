@@ -161,9 +161,11 @@ export default function LeadDashboard() {
     return matchesSearch;
   });
 
+  const [showSidebar, setShowSidebar] = useState(true);
+
   if (profileLoading || loading) {
     return (
-      <div className="min-h-screen bg-[#0f172a] flex items-center justify-center">
+      <div className="min-h-screen bg-[#020617] flex items-center justify-center">
         <Loader label="Lead Operations" sublabel="Tactical Command Sync" />
       </div>
     );
@@ -209,11 +211,19 @@ export default function LeadDashboard() {
             </div>
           </div>
         </div>
+
+        {/* Mobile Sidebar Toggle */}
+        <button 
+          onClick={() => setShowSidebar(!showSidebar)}
+          className="md:hidden w-12 h-12 bg-white/5 rounded-2xl border border-white/10 flex items-center justify-center hover:bg-white/10 transition-all shadow-2xl z-50"
+        >
+          <List className="w-5 h-5 text-white" />
+        </button>
       </header>
 
-      <div className="flex-1 flex flex-col lg:flex-row overflow-hidden relative">
+      <div className="flex-1 flex flex-col md:flex-row overflow-hidden relative">
         {/* Left Sidebar: Unit Roster (Recycler View) */}
-        <aside className="w-full lg:w-96 border-r border-white/5 bg-slate-900/10 backdrop-blur-2xl flex flex-col h-full z-20">
+        <aside className={`absolute md:relative w-full md:w-96 border-r border-white/5 bg-slate-900/10 backdrop-blur-3xl flex flex-col h-full z-40 transition-all duration-500 ${showSidebar ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
           <div className="p-8 border-b border-white/5 space-y-8">
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Unit Roster</span>
@@ -251,7 +261,10 @@ export default function LeadDashboard() {
             {filteredMembers.map((m) => (
               <button
                 key={m.id}
-                onClick={() => setSelectedMember(m)}
+                onClick={() => {
+                  setSelectedMember(m);
+                  if (window.innerWidth < 768) setShowSidebar(false);
+                }}
                 className={`w-full p-5 rounded-3xl border transition-all text-left group relative overflow-hidden ${
                   selectedMember?.id === m.id 
                   ? 'bg-white border-white text-slate-950 shadow-[0_20px_40px_rgba(255,255,255,0.1)] scale-[1.02]' 
@@ -261,7 +274,7 @@ export default function LeadDashboard() {
                 <div className="relative z-10 flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <div className={`w-10 h-10 rounded-2xl flex items-center justify-center font-black text-xs ${selectedMember?.id === m.id ? 'bg-slate-950 text-white' : 'bg-slate-900 text-slate-500'}`}>
-                      {m.full_name?.[0]}
+                      {m.full_name?.[0] || '?'}
                     </div>
                     <div>
                       <h3 className="font-black text-xs tracking-tight uppercase truncate">{m.full_name}</h3>
@@ -391,7 +404,7 @@ export default function LeadDashboard() {
                             <span className="text-[10px] font-black text-blue-400 uppercase tracking-widest">{log.date}</span>
                             <div className="w-1 h-1 bg-slate-800 rounded-full" />
                             <span className="text-[8px] font-black text-slate-600 uppercase">
-                              {new Date(log.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              {log.created_at ? new Date(log.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'N/A'}
                             </span>
                           </div>
                           <p className="text-xs font-bold text-slate-400 leading-relaxed line-clamp-2 italic">

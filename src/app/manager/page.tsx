@@ -180,7 +180,7 @@ export default function ManagerDashboard() {
                         <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black text-xs ${
                           selectedUser?.id === member.id ? 'bg-slate-950 text-white' : 'bg-slate-900 text-slate-500'
                         }`}>
-                          {member.full_name[0]}
+                          {member.full_name?.[0] || '?'}
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-xs font-black uppercase tracking-tight">{member.full_name}</p>
@@ -235,7 +235,7 @@ export default function ManagerDashboard() {
                             <div className="flex items-center gap-5 text-slate-500">
                               <Clock className="w-5 h-5" />
                               <span className="text-[10px] font-black uppercase tracking-[0.3em]">
-                                {log.createdAt ? new Date(log.createdAt).toLocaleTimeString() : 'N/A'}
+                                {log.createdAt && !isNaN(log.createdAt) ? new Date(log.createdAt).toLocaleTimeString() : 'N/A'}
                               </span>
                             </div>
                           </div>

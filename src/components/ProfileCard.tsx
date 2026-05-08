@@ -121,73 +121,73 @@ export default function ProfileCard({ profile: managedProfile, logs: managedLogs
         <div className="absolute top-0 right-0 p-4 opacity-10">
           <Target className="w-20 h-20 text-slate-900" />
         </div>
-        <div className="flex items-center gap-6 mb-10 relative z-10">
-          <div className="w-20 h-20 bg-slate-900 rounded-[2rem] flex items-center justify-center text-3xl font-black text-white shadow-2xl relative shrink-0">
+        <div className="flex items-center gap-4 mb-6 relative z-10">
+          <div className="w-14 h-14 bg-slate-900 rounded-2xl flex items-center justify-center text-xl font-black text-white shadow-2xl relative shrink-0">
             {profile.name[0]}
-            <div className="absolute -bottom-2 -right-2 w-7 h-7 bg-emerald-500 rounded-xl flex items-center justify-center shadow-lg border-4 border-white">
-               <TrendingUp className="w-4 h-4 text-white" />
+            <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 rounded-lg flex items-center justify-center shadow-lg border-2 border-white">
+               <TrendingUp className="w-3 h-3 text-white" />
             </div>
           </div>
           <div className="min-w-0">
-            <h3 className="text-2xl font-black text-slate-900 tracking-tighter truncate">{profile.name}</h3>
-            <div className="flex flex-wrap items-center gap-3 mt-2">
-              <span className="px-2 py-0.5 bg-slate-100 text-slate-900 text-[9px] font-black uppercase tracking-[0.2em] rounded-md border border-slate-200">{profile.role}</span>
-              <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] bg-slate-100 px-3 py-1 rounded-md truncate">ID: {profile.employeeId}</span>
+            <h3 className="text-lg font-black text-slate-900 tracking-tighter truncate leading-none">{profile.name}</h3>
+            <div className="flex flex-wrap items-center gap-2 mt-1.5">
+              <span className="px-1.5 py-0.5 bg-slate-100 text-slate-900 text-[7px] font-black uppercase tracking-widest rounded border border-slate-200">{profile.role}</span>
+              <span className="text-[7px] font-black text-slate-400 uppercase tracking-widest bg-slate-100 px-2 py-0.5 rounded truncate">ID: {profile.employeeId}</span>
             </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-3 relative z-10">
-          <div className="p-4 bg-white border border-slate-100 rounded-2xl shadow-sm space-y-1 group hover:border-blue-500/30 transition-all">
-            <p className="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em]">Weekly</p>
-            <p className="text-xl font-black text-slate-900 tracking-tighter">{stats.weekly}%</p>
+        <div className="grid grid-cols-3 gap-2 relative z-10">
+          <div className="p-3 bg-white border border-slate-100 rounded-xl shadow-sm space-y-0.5 group hover:border-blue-500/30 transition-all">
+            <p className="text-[7px] font-black text-slate-400 uppercase tracking-widest">Weekly</p>
+            <p className="text-base font-black text-slate-900 tracking-tighter">{stats.weekly}%</p>
           </div>
-          <div className="p-4 bg-white border border-slate-100 rounded-2xl shadow-sm space-y-1 group hover:border-emerald-500/30 transition-all">
-            <p className="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em]">Monthly</p>
-            <p className="text-xl font-black text-slate-900 tracking-tighter">{stats.monthly}%</p>
+          <div className="p-3 bg-white border border-slate-100 rounded-xl shadow-sm space-y-0.5 group hover:border-emerald-500/30 transition-all">
+            <p className="text-[7px] font-black text-slate-400 uppercase tracking-widest">Monthly</p>
+            <p className="text-base font-black text-slate-900 tracking-tighter">{stats.monthly}%</p>
           </div>
-          <div className="p-4 bg-white border border-slate-100 rounded-2xl shadow-sm space-y-1 group hover:border-indigo-500/30 transition-all">
-            <p className="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em]">Yearly</p>
-            <p className="text-xl font-black text-slate-900 tracking-tighter">{stats.yearly}%</p>
+          <div className="p-3 bg-white border border-slate-100 rounded-xl shadow-sm space-y-0.5 group hover:border-indigo-500/30 transition-all">
+            <p className="text-[7px] font-black text-slate-400 uppercase tracking-widest">Yearly</p>
+            <p className="text-base font-black text-slate-900 tracking-tighter">{stats.yearly}%</p>
           </div>
         </div>
       </div>
 
-      <div className="p-8 space-y-8 flex-1 overflow-y-auto scrollbar-hide">
+      <div className="p-6 space-y-6 flex-1 overflow-y-auto scrollbar-hide">
         <section>
-          <div className="flex items-center gap-3 mb-6">
-            <Code className="w-4 h-4 text-blue-600" />
-            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Core Competencies</h4>
+          <div className="flex items-center gap-2 mb-4">
+            <Code className="w-3 h-3 text-blue-600" />
+            <h4 className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Core Competencies</h4>
           </div>
-          <div className="flex flex-wrap gap-2.5">
+          <div className="flex flex-wrap gap-2">
             {profile.skills.map((skill) => (
-              <div key={skill.name} className="flex items-center gap-4 p-3 bg-slate-50 border border-slate-200 rounded-2xl group hover:border-blue-500/50 hover:bg-white transition-all shadow-sm hover:shadow-md">
-                <span className="text-xs font-black text-slate-700 uppercase tracking-tight">{skill.name}</span>
-                <span className="w-6 h-6 bg-white border border-slate-200 rounded-lg flex items-center justify-center text-[10px] font-black text-slate-400 group-hover:text-blue-600 transition-colors">
+              <div key={skill.name} className="flex items-center gap-2 p-2 bg-slate-50 border border-slate-200 rounded-xl group hover:border-blue-500/50 hover:bg-white transition-all shadow-sm">
+                <span className="text-[9px] font-black text-slate-700 uppercase tracking-tight">{skill.name}</span>
+                <span className="w-5 h-5 bg-white border border-slate-200 rounded-md flex items-center justify-center text-[8px] font-black text-slate-400 group-hover:text-blue-600">
                   {skill.count}
                 </span>
               </div>
             ))}
             {profile.skills.length === 0 && (
-              <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] italic">No telemetry data detected</p>
+              <p className="text-[8px] font-black text-slate-300 uppercase tracking-widest italic">No telemetry data detected</p>
             )}
           </div>
         </section>
 
-        <section className="p-8 bg-white border border-slate-100 rounded-[2.5rem] shadow-xl shadow-slate-200/50 space-y-4 relative overflow-hidden group">
-          <div className="absolute top-0 right-0 p-4 opacity-[0.03] group-hover:opacity-10 transition-opacity">
-            <Brain className="w-20 h-20 text-slate-900" />
+        <section className="p-5 bg-white border border-slate-100 rounded-[1.5rem] shadow-xl shadow-slate-200/50 space-y-2 relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-3 opacity-[0.03] group-hover:opacity-10 transition-opacity">
+            <Brain className="w-12 h-12 text-slate-900" />
           </div>
-          <div className="flex items-center gap-3 relative z-10">
-            <div className="w-8 h-8 bg-emerald-50 rounded-lg flex items-center justify-center">
-              <Brain className="w-4 h-4 text-emerald-600" />
+          <div className="flex items-center gap-2 relative z-10">
+            <div className="w-6 h-6 bg-emerald-50 rounded-lg flex items-center justify-center">
+              <Brain className="w-3 h-3 text-emerald-600" />
             </div>
-            <h4 className="text-[9px] font-black uppercase tracking-[0.4em] text-emerald-600 flex items-center gap-3">
+            <h4 className="text-[8px] font-black uppercase tracking-widest text-emerald-600 flex items-center gap-2">
               Growth Intel
-              {isLoadingIntel && <Sparkles className="w-4 h-4 animate-spin" />}
+              {isLoadingIntel && <Sparkles className="w-3 h-3 animate-spin" />}
             </h4>
           </div>
-          <p className="text-[12px] font-bold leading-relaxed text-slate-600 italic border-l-2 border-emerald-500/30 pl-6 relative z-10">
+          <p className="text-[10px] font-bold leading-normal text-slate-600 italic border-l border-emerald-500/30 pl-4 relative z-10">
             &quot;{growthIntel}&quot;
           </p>
         </section>

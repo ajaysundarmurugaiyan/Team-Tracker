@@ -57,7 +57,19 @@ export default function ProfileCard({ profile: managedProfile, logs: managedLogs
     const lastDayOfYear = new Date(currentYear, 11, 31);
     const totalWorkingDaysInYear = countWorkingDaysInRange(firstDayOfYear, lastDayOfYear);
 
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() - now.getDay()); 
+    startOfWeek.setHours(0, 0, 0, 0);
+
+    const weeklyLogs = logs.filter(l => {
+      const d = new Date(l.date);
+      return d >= startOfWeek && d <= now;
+    });
+
+    const uniqueWeeklyDays = new Set(weeklyLogs.map(l => l.date)).size;
+
     return {
+      weekly: Math.min(Math.round((uniqueWeeklyDays / 5) * 100), 100),
       monthly: Math.round((uniqueMonthlyDays / totalWorkingDaysInMonth) * 100),
       yearly: Math.round((uniqueYearlyDays / totalWorkingDaysInYear) * 100),
       total: logs.length
@@ -125,22 +137,23 @@ export default function ProfileCard({ profile: managedProfile, logs: managedLogs
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 relative z-10">
-          <div className="p-6 bg-white border border-slate-100 rounded-3xl shadow-sm space-y-2 group hover:border-blue-500/30 transition-all">
-            <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em]">Monthly Sync</p>
-            <div className="flex items-end justify-between">
-              <p className="text-3xl font-black text-slate-900 tracking-tighter">{stats.monthly}%</p>
-              <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-            </div>
+        <div className="grid grid-cols-3 gap-3 relative z-10">
+          <div className="p-4 bg-white border border-slate-100 rounded-2xl shadow-sm space-y-1 group hover:border-blue-500/30 transition-all">
+            <p className="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em]">Weekly</p>
+            <p className="text-xl font-black text-slate-900 tracking-tighter">{stats.weekly}%</p>
           </div>
-          <div className="p-6 bg-white border border-slate-100 rounded-3xl shadow-sm space-y-2 group hover:border-indigo-500/30 transition-all">
-            <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em]">Yearly Goal</p>
-            <p className="text-3xl font-black text-slate-900 tracking-tighter">{stats.yearly}%</p>
+          <div className="p-4 bg-white border border-slate-100 rounded-2xl shadow-sm space-y-1 group hover:border-emerald-500/30 transition-all">
+            <p className="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em]">Monthly</p>
+            <p className="text-xl font-black text-slate-900 tracking-tighter">{stats.monthly}%</p>
+          </div>
+          <div className="p-4 bg-white border border-slate-100 rounded-2xl shadow-sm space-y-1 group hover:border-indigo-500/30 transition-all">
+            <p className="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em]">Yearly</p>
+            <p className="text-xl font-black text-slate-900 tracking-tighter">{stats.yearly}%</p>
           </div>
         </div>
       </div>
 
-      <div className="p-10 space-y-10 flex-1">
+      <div className="p-8 space-y-8 flex-1 overflow-y-auto scrollbar-hide">
         <section>
           <div className="flex items-center gap-3 mb-6">
             <Code className="w-4 h-4 text-blue-600" />

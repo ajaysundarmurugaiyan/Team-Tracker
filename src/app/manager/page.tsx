@@ -102,9 +102,9 @@ function ManagerDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] text-slate-900 flex flex-col md:flex-row font-outfit overflow-hidden">
+    <div className="min-h-screen bg-[#f8fafc] text-slate-900 flex flex-col md:flex-row font-outfit overflow-x-hidden">
       {/* Executive Sidebar */}
-      <div className={`w-full md:w-80 bg-white border-r border-slate-200 flex flex-col h-screen z-30 transition-all duration-500 relative ${!showSidebar && '-translate-x-full md:translate-x-0'}`}>
+      <div className={`w-full md:w-80 bg-white border-r border-slate-200 flex flex-col h-screen sticky top-0 z-30 transition-all duration-500 ${!showSidebar && '-translate-x-full md:translate-x-0'}`}>
         <div className="p-8 border-b border-slate-100 space-y-6">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-slate-900 rounded-2xl flex items-center justify-center shadow-xl">
@@ -189,7 +189,7 @@ function ManagerDashboard() {
       </div>
 
       {/* Main Intelligence Field */}
-      <div className="flex-1 h-screen overflow-y-auto bg-[#f8fafc] p-4 md:p-8 lg:p-12 scrollbar-thin scrollbar-thumb-slate-200">
+      <div className="flex-1 bg-[#f8fafc] p-4 md:p-8 lg:p-12">
         <AnimatePresence mode="wait">
           {selectedUser ? (
             <motion.div

@@ -115,7 +115,7 @@ function LeadDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] text-slate-900 flex flex-col h-screen overflow-hidden font-outfit">
+    <div className="min-h-screen bg-[#f8fafc] text-slate-900 flex flex-col font-outfit overflow-x-hidden">
       {/* Tactical Header */}
       <header className="h-20 border-b border-slate-200 bg-white flex items-center justify-between px-8 shrink-0 z-30 relative shadow-sm">
         <div className="flex items-center gap-6">
@@ -159,9 +159,9 @@ function LeadDashboard() {
         </button>
       </header>
 
-      <div className="flex-1 flex flex-col md:flex-row overflow-hidden relative">
+      <div className="flex-1 flex flex-col md:flex-row relative">
         {/* Left Sidebar: Unit Roster */}
-        <aside className={`absolute md:relative w-full md:w-80 border-r border-slate-200 bg-white flex flex-col h-full z-40 transition-all duration-500 ${showSidebar ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
+        <aside className={`absolute md:sticky md:top-20 w-full md:w-80 border-r border-slate-200 bg-white flex flex-col h-[calc(100vh-5rem)] z-40 transition-all duration-500 ${showSidebar ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
           <div className="p-6 border-b border-slate-100 space-y-6">
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Unit Assets</span>
@@ -228,7 +228,7 @@ function LeadDashboard() {
         </aside>
 
         {/* Main Content: Normal UI */}
-        <main className="flex-1 overflow-y-auto bg-[#f8fafc] p-4 md:p-8 lg:p-12 scrollbar-thin scrollbar-thumb-slate-200">
+        <main className="flex-1 bg-[#f8fafc] p-4 md:p-8 lg:p-12">
           <AnimatePresence mode="wait">
             {selectedMember ? (
               <motion.div

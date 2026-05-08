@@ -80,13 +80,13 @@ export default function HomePage() {
             </p>
           </div>
           
-          <div className="flex flex-wrap items-center gap-2 sm:gap-4">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-4 w-full md:w-auto">
             {profile?.role === 'lead' && (
               <button
                 onClick={() => router.push('/lead')}
-                className="flex-1 sm:flex-none px-4 sm:px-6 py-3 sm:py-4 bg-white border border-slate-200 rounded-xl text-slate-600 hover:text-slate-900 transition-all font-black uppercase tracking-widest text-[9px] sm:text-[10px] flex items-center justify-center gap-2 shadow-sm"
+                className="flex-1 sm:flex-none px-4 py-3 sm:py-4 bg-white border border-slate-200 rounded-xl text-slate-600 hover:text-slate-900 transition-all font-black uppercase tracking-widest text-[8px] sm:text-[10px] flex items-center justify-center gap-2 shadow-sm whitespace-nowrap"
               >
-                <Users className="w-3.5 h-3.5 sm:w-4 h-4" />
+                <Users className="w-3 h-3 sm:w-4 h-4" />
                 <span>Lead Ops</span>
               </button>
             )}
@@ -94,9 +94,9 @@ export default function HomePage() {
             {profile?.role !== 'manager' && (
               <button
                 onClick={() => router.push('/log')}
-                className="flex-1 sm:flex-none px-6 sm:px-8 py-3 sm:py-4 bg-slate-900 text-white rounded-xl shadow-xl shadow-slate-900/10 hover:bg-black transition-all font-black uppercase tracking-[0.15em] sm:tracking-[0.2em] text-[9px] sm:text-[10px] flex items-center justify-center gap-2 sm:gap-3 border border-white/10"
+                className="flex-[2] sm:flex-none px-4 sm:px-8 py-3 sm:py-4 bg-slate-900 text-white rounded-xl shadow-xl shadow-slate-900/10 hover:bg-black transition-all font-black uppercase tracking-[0.1em] sm:tracking-[0.2em] text-[8px] sm:text-[10px] flex items-center justify-center gap-2 sm:gap-3 border border-white/10 whitespace-nowrap"
               >
-                <Plus className="w-3.5 h-3.5 sm:w-4 h-4 text-emerald-400" />
+                <Plus className="w-3 h-3 sm:w-4 h-4 text-emerald-400" />
                 <span>Initialize Capture</span>
               </button>
             )}

@@ -22,17 +22,49 @@ export default function LoggerWizard({ onComplete }: Props) {
   const [isSummarizing, setIsSummarizing] = useState(false);
   const [aiSummary, setAiSummary] = useState('');
   const [isLearningOnly, setIsLearningOnly] = useState(false);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [isGeneratingSuggestions, setIsGeneratingSuggestions] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const router = useRouter();
 
   const handleNext = async () => {
-    if (step === 3) {
+    if (step === 1) {
+      setStep(2);
+    } else if (step === 2) {
+      setStep(3);
+      generateSuggestions();
+    } else if (step === 3) {
       setStep(4);
       generateSummary();
-    } else if (step < 3) {
-      setStep(step + 1);
     } else {
       finish();
+    }
+  };
+
+  const generateSuggestions = async () => {
+    if (suggestions.length > 0 || !content.trim()) return;
+    setIsGeneratingSuggestions(true);
+    try {
+      const messages = `Based on these tasks: "${content}", suggest 3 high-impact, professional "strategic takeaways" or "learnings". 
+      Format: Provide exactly 3 bullet points, each 5-8 words. No other text.`;
+
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          messages,
+          conversationHistory: [{ role: 'system', content: 'You are an AI career coach. Provide extremely concise, professional strategic insights. No preamble.' }]
+        }),
+      });
+      const data = await response.json();
+      if (data.reply) {
+        const lines = data.reply.split('\n').filter((l: string) => l.trim()).map((l: string) => l.replace(/^[•\-\d\.]\s*/, '').trim()).slice(0, 3);
+        setSuggestions(lines);
+      }
+    } catch (error) {
+      console.error('Suggestions error:', error);
+    } finally {
+      setIsGeneratingSuggestions(false);
     }
   };
 
@@ -151,7 +183,7 @@ export default function LoggerWizard({ onComplete }: Props) {
         <StepIndicator />
       </div>
 
-      <div className="p-10 min-h-[480px] flex flex-col">
+      <div className="p-6 md:p-10 min-h-[400px] md:min-h-[480px] flex flex-col">
         <AnimatePresence mode="wait">
           {step === 1 && (
             <motion.div key="step1" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-6 flex-1">
@@ -244,17 +276,45 @@ export default function LoggerWizard({ onComplete }: Props) {
           )}
 
           {step === 3 && (
-            <motion.div key="step3" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-6 flex-1">
-              <div>
-                <h4 className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4 flex items-center gap-3">
-                  <Brain className="w-4 h-4 text-blue-500" /> Strategic Insight
-                </h4>
-                <textarea
-                  value={learnings}
-                  onChange={(e) => setLearnings(e.target.value)}
-                  placeholder="Identify a strategic takeaway..."
-                  className="w-full h-48 p-6 bg-slate-50 border border-slate-100 rounded-2xl focus:outline-none focus:border-slate-300 focus:bg-white transition-all font-medium text-slate-900 placeholder:text-slate-300 text-sm tracking-tight shadow-sm"
-                />
+            <motion.div key="step3" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-8 flex-1">
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] flex items-center gap-3">
+                    <Brain className="w-4 h-4 text-blue-500" /> Suggested Insights
+                  </h4>
+                  {isGeneratingSuggestions && <div className="w-4 h-4 border-2 border-slate-200 border-t-blue-500 rounded-full animate-spin" />}
+                </div>
+
+                <div className="grid grid-cols-1 gap-3">
+                  {suggestions.map((s, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setLearnings(s)}
+                      className={`p-5 rounded-2xl text-left transition-all border ${
+                        learnings === s 
+                          ? 'bg-blue-600 border-blue-600 text-white shadow-lg' 
+                          : 'bg-slate-50 border-slate-100 text-slate-600 hover:border-slate-200'
+                      }`}
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className={`w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-bold ${learnings === s ? 'bg-white/20' : 'bg-white border border-slate-100'}`}>
+                          {i + 1}
+                        </div>
+                        <p className="text-[11px] font-bold italic tracking-tight leading-snug">&quot;{s}&quot;</p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+
+                <div className="space-y-4 pt-4 border-t border-slate-100">
+                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Custom Insight Override</p>
+                  <textarea
+                    value={learnings}
+                    onChange={(e) => setLearnings(e.target.value)}
+                    placeholder="Identify a custom strategic takeaway..."
+                    className="w-full h-32 p-6 bg-slate-50 border border-slate-100 rounded-2xl focus:outline-none focus:border-slate-300 focus:bg-white transition-all font-medium text-slate-900 placeholder:text-slate-300 text-sm tracking-tight shadow-sm"
+                  />
+                </div>
               </div>
             </motion.div>
           )}

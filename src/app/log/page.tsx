@@ -11,21 +11,28 @@ import { motion } from 'framer-motion';
 
 export default function LogPage() {
   const { addLog } = useLogs();
-  const { user, loading, updateSkills } = useProfile();
+  const { user, profile, loading, updateSkills } = useProfile();
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading && !user) {
-      router.push('/login');
+    if (!loading) {
+      if (!user) {
+        router.push('/login');
+      } else if (profile?.role === 'manager') {
+        router.push('/manager');
+      }
     }
-  }, [user, loading, router]);
+  }, [user, loading, profile, router]);
 
   if (loading || !user) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-slate-200 border-t-slate-900 rounded-full animate-spin" />
-          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Validating Channel...</span>
+      <div className="min-h-screen bg-[#020617] flex items-center justify-center font-outfit">
+        <div className="flex flex-col items-center gap-6">
+          <div className="w-16 h-16 border-[3px] border-white/5 border-t-white rounded-full animate-spin shadow-[0_0_20px_rgba(255,255,255,0.1)]" />
+          <div className="space-y-2 text-center">
+            <span className="block text-xs font-black text-white uppercase tracking-[0.4em]">Validating Channel</span>
+            <span className="block text-[9px] font-black text-slate-600 uppercase tracking-[0.2em] opacity-50">Establishing Secure Uplink v4.0</span>
+          </div>
         </div>
       </div>
     );
@@ -58,14 +65,14 @@ export default function LogPage() {
   };
 
   return (
-    <div className="min-h-screen p-4 md:p-8 lg:p-12 bg-slate-50">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen p-6 md:p-12 lg:p-20 bg-[#020617] font-outfit overflow-hidden relative">
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-600/5 via-transparent to-indigo-600/5 pointer-events-none" />
+      <div className="max-w-4xl mx-auto relative z-10">
         <button
           onClick={() => router.push('/')}
-          className="mb-8 flex items-center gap-2 text-slate-500 hover:text-slate-900 transition-colors font-bold group"
+          className="mb-12 w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center hover:bg-white/10 hover:scale-105 transition-all border border-white/10 group shadow-2xl"
         >
-          <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
-          <span>Back to Dashboard</span>
+          <ArrowLeft className="w-5 h-5 text-slate-400 group-hover:text-white transition-colors" />
         </button>
 
         <motion.div

@@ -114,17 +114,17 @@ export default function LoggerWizard({ onComplete }: Props) {
 
   const StepIndicator = () => (
     <div className="flex items-center justify-between mb-16 relative px-4">
-      <div className="absolute top-1/2 left-0 right-0 h-[1px] bg-slate-200 -translate-y-1/2 z-0 mx-8" />
+      <div className="absolute top-1/2 left-0 right-0 h-[1px] bg-white/10 -translate-y-1/2 z-0 mx-8" />
       {[1, 2, 3, 4].map((i) => (
         <div key={i} className="relative z-10 flex flex-col items-center gap-3">
           <div 
-            className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs transition-all duration-300 border ${
-              step > i ? 'bg-slate-900 border-slate-900 text-white' :
-              step === i ? 'bg-white border-blue-600 text-blue-600 shadow-lg shadow-blue-100 scale-110' :
-              'bg-white border-slate-200 text-slate-300'
+            className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-xs transition-all duration-300 border ${
+              step > i ? 'bg-emerald-500 border-emerald-400 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)]' :
+              step === i ? 'bg-white border-white text-slate-950 shadow-[0_0_20px_rgba(255,255,255,0.2)] scale-110' :
+              'bg-slate-950 border-white/10 text-slate-600'
             }`}
           >
-            {step > i ? <Check className="w-4 h-4" /> : i}
+            {step > i ? <Check className="w-5 h-5 stroke-[3px]" /> : i}
           </div>
         </div>
       ))}
@@ -132,16 +132,19 @@ export default function LoggerWizard({ onComplete }: Props) {
   );
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-xl shadow-slate-200/50 overflow-hidden relative transition-colors">
-      <div className="px-10 py-8 border-b border-slate-100 bg-slate-50/50">
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <div className="w-10 h-10 bg-white border border-slate-200 rounded-xl flex items-center justify-center shadow-sm">
-              <Rocket className="w-5 h-5 text-slate-600" />
+    <div className="bg-[#020617]/40 rounded-[3rem] border border-white/5 shadow-2xl backdrop-blur-3xl overflow-hidden relative transition-all duration-500">
+      <div className="px-12 py-10 border-b border-white/5 bg-white/5 relative overflow-hidden">
+        <div className="absolute top-0 right-0 p-8 opacity-5">
+          <Rocket className="w-32 h-32 text-white" />
+        </div>
+        <div className="flex items-center justify-between mb-10 relative z-10">
+          <div className="flex items-center gap-6">
+            <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-2xl group">
+              <Rocket className="w-7 h-7 text-slate-950 group-hover:scale-110 transition-transform" />
             </div>
             <div>
-              <h3 className="text-xl font-bold text-slate-900 tracking-tight">Capture Session</h3>
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Growth Engine v1.0</p>
+              <h3 className="text-2xl font-black text-white tracking-[0.2em] uppercase italic">Capture Session</h3>
+              <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.5em] opacity-60">Growth Engine v4.0.1</p>
             </div>
           </div>
         </div>
@@ -151,16 +154,16 @@ export default function LoggerWizard({ onComplete }: Props) {
       <div className="p-10 min-h-[480px] flex flex-col">
         <AnimatePresence mode="wait">
           {step === 1 && (
-            <motion.div key="step1" initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} className="space-y-8 flex-1">
+            <motion.div key="step1" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-8 flex-1">
               <div>
-                <h4 className="text-sm font-black text-slate-400 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
-                  <Code className="w-4 h-4 text-blue-600" /> Core Objective
+                <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] mb-6 flex items-center gap-3">
+                  <Code className="w-4 h-4 text-blue-500" /> Core Objective
                 </h4>
                 <textarea
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
-                  placeholder={isLearningOnly ? "Describe theoretical concepts..." : "Outline tasks completed..."}
-                  className="w-full h-44 p-6 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 transition-all font-medium text-slate-700 placeholder:text-slate-300 text-lg"
+                  placeholder={isLearningOnly ? "DESCRIBE THEORETICAL CONCEPTS..." : "OUTLINE TASKS COMPLETED..."}
+                  className="w-full h-56 p-8 bg-white/5 border border-white/5 rounded-3xl focus:outline-none focus:border-blue-500/50 transition-all font-black text-white placeholder:text-slate-700 text-xl tracking-tight shadow-inner"
                 />
               </div>
             </motion.div>
@@ -169,19 +172,19 @@ export default function LoggerWizard({ onComplete }: Props) {
           {step === 2 && (
             <motion.div key="step2" initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} className="space-y-8 flex-1">
               <div>
-                <h4 className="text-sm font-black text-slate-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-blue-600" /> Tech Stack
+                <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] mb-8 flex items-center gap-3">
+                  <Sparkles className="w-4 h-4 text-blue-500" /> Tech Stack
                 </h4>
                 
-                <div className="flex flex-wrap gap-2 mb-10">
+                <div className="flex flex-wrap gap-3 mb-12">
                   {SKILL_SUGGESTIONS.map(skill => (
                     <button
                       key={skill}
                       onClick={() => toggleSkill(skill)}
-                      className={`px-5 py-3 rounded-xl text-xs font-bold transition-all border ${
+                      className={`px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border ${
                         selectedSkills.some(s => s.toLowerCase() === skill.toLowerCase())
-                          ? 'bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-200'
-                          : 'bg-white border-slate-200 text-slate-600 hover:border-blue-300'
+                          ? 'bg-white border-white text-slate-950 shadow-[0_10px_30px_rgba(255,255,255,0.1)]'
+                          : 'bg-white/5 border-white/5 text-slate-500 hover:border-white/20'
                       }`}
                     >
                       {skill}
@@ -241,31 +244,36 @@ export default function LoggerWizard({ onComplete }: Props) {
           )}
 
           {step === 3 && (
-            <motion.div key="step3" initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} className="space-y-8 flex-1">
+            <motion.div key="step3" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-8 flex-1">
               <div>
-                <h4 className="text-sm font-black text-slate-400 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
-                  <Brain className="w-4 h-4 text-blue-600" /> Strategic Insight
+                <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] mb-6 flex items-center gap-3">
+                  <Brain className="w-4 h-4 text-blue-500" /> Strategic Insight
                 </h4>
                 <textarea
                   value={learnings}
                   onChange={(e) => setLearnings(e.target.value)}
-                  placeholder="Identify a strategic takeaway..."
-                  className="w-full h-44 p-6 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 transition-all font-medium text-slate-700 placeholder:text-slate-300 text-lg"
+                  placeholder="IDENTIFY A STRATEGIC TAKEAWAY..."
+                  className="w-full h-56 p-8 bg-white/5 border border-white/5 rounded-3xl focus:outline-none focus:border-blue-500/50 transition-all font-black text-white placeholder:text-slate-700 text-xl tracking-tight shadow-inner"
                 />
               </div>
             </motion.div>
           )}
 
           {step === 4 && (
-            <motion.div key="step4" initial={{ opacity: 0, scale: 0.99 }} animate={{ opacity: 1, scale: 1 }} className="space-y-8 flex-1 flex flex-col justify-center items-center text-center py-6">
-              <div className="w-16 h-16 bg-blue-50 border border-blue-100 rounded-2xl flex items-center justify-center mb-4 relative">
-                <Sparkles className={`w-8 h-8 text-blue-600 ${isSummarizing ? 'animate-spin' : 'animate-bounce'}`} />
+            <motion.div key="step4" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="space-y-12 flex-1 flex flex-col justify-center items-center text-center py-10">
+              <div className="w-24 h-24 bg-white/5 border border-white/10 rounded-[2rem] flex items-center justify-center mb-6 relative group overflow-hidden">
+                <div className="absolute inset-0 bg-blue-600/10 animate-pulse" />
+                <Sparkles className={`w-10 h-10 text-white relative z-10 ${isSummarizing ? 'animate-spin' : 'animate-bounce'}`} />
               </div>
-              <h4 className="text-2xl font-bold text-slate-900 tracking-tight">
-                {isSummarizing ? 'Synthesizing...' : 'Audit Ready'}
-              </h4>
-              <div className="bg-slate-50 p-8 rounded-2xl border border-slate-200 max-w-lg w-full">
-                <p className="text-slate-600 font-medium text-lg italic italic">
+              <div className="space-y-4">
+                <h4 className="text-3xl font-black text-white tracking-tighter uppercase italic">
+                  {isSummarizing ? 'Synthesizing...' : 'Audit Ready'}
+                </h4>
+                <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.5em]">Protocol Finalization</p>
+              </div>
+              <div className="bg-white p-12 rounded-[3rem] border border-white shadow-2xl max-w-2xl w-full relative overflow-hidden group">
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-600/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                <p className="text-slate-900 font-black text-2xl tracking-tight leading-snug italic relative z-10">
                   &quot;{aiSummary || 'Syncing data...'}&quot;
                 </p>
               </div>
@@ -273,25 +281,25 @@ export default function LoggerWizard({ onComplete }: Props) {
           )}
         </AnimatePresence>
 
-        <div className="mt-12 flex justify-between items-center pt-8 border-t border-slate-100">
+        <div className="mt-16 flex justify-between items-center pt-10 border-t border-white/5">
           {step > 1 && step < 4 ? (
-            <button onClick={() => setStep(step - 1)} className="px-6 py-2 text-slate-400 font-black hover:text-slate-900 transition-colors uppercase tracking-[0.2em] text-[10px]">Back</button>
+            <button onClick={() => setStep(step - 1)} className="px-8 py-3 text-slate-500 font-black hover:text-white transition-colors uppercase tracking-[0.3em] text-[10px]">Back</button>
           ) : <div />}
           
           <button
             onClick={handleNext}
             disabled={(step === 1 && !content.trim()) || isSummarizing || isSyncing || (step === 4 && (!aiSummary || !content.trim()))}
-            className="px-8 py-3.5 bg-slate-900 text-white rounded-xl shadow-xl shadow-slate-900/10 hover:bg-black transition-all font-black uppercase tracking-widest text-[11px] flex items-center gap-3 disabled:bg-slate-200"
+            className="px-10 py-5 bg-white text-slate-950 rounded-[2rem] shadow-2xl hover:scale-105 active:scale-95 transition-all font-black uppercase tracking-[0.2em] text-[11px] flex items-center gap-4 disabled:opacity-10 disabled:grayscale"
           >
             {step === 4 ? (
               <>
-                <Check className="w-4 h-4" />
-                <span>{isSyncing ? 'Syncing...' : 'Synchronize & Save'}</span>
+                <Check className="w-5 h-5 stroke-[3px]" />
+                <span>{isSyncing ? 'Synchronizing...' : 'Commit to History'}</span>
               </>
             ) : (
               <>
-                <span>{step === 3 ? 'Generate Summary' : 'Proceed'}</span>
-                <ArrowRight className="w-4 h-4" />
+                <span>{step === 3 ? 'Finalize Audit' : 'Proceed'}</span>
+                <ArrowRight className="w-5 h-5" />
               </>
             )}
           </button>

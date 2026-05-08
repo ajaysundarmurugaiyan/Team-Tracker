@@ -54,13 +54,15 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
         // Try to get session with a timeout
         const sessionPromise = supabase.auth.getSession();
         const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Session fetch timeout')), 20000)
+          setTimeout(() => reject(new Error('Session fetch timeout')), 10000) // Reduced to 10s for faster feedback
         );
 
-        const { data: { session }, error } = await Promise.race([sessionPromise, timeoutPromise]) as any;
+        const raceResult = await Promise.race([sessionPromise, timeoutPromise]) as any;
+        const { data: { session }, error } = raceResult || { data: { session: null }, error: null };
         
         if (error) {
           console.error('Session error:', error);
+          setConnectionError('offline');
           if (mounted) setLoading(false);
           return;
         }
@@ -263,17 +265,27 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       // 1. Find the member by employee ID
       const { data: member, error: findError } = await supabase
         .from('profiles')
-        .select('id, lead_id')
+        .select('id, lead_id, role')
         .eq('employee_id', employeeId)
         .single();
 
       if (findError || !member) {
-        toast.error('Member not found with this ID');
+        toast.error('Identity Sync Failed: Member not found in global registry');
+        return false;
+      }
+
+      if (member.role === 'manager') {
+        toast.error('Identity Conflict: Managers cannot be assigned to tactical units.');
+        return false;
+      }
+
+      if (member.role === 'lead') {
+        toast.error('Hierarchy Violation: Tactical Leads cannot be assigned to other units.');
         return false;
       }
 
       if (member.lead_id) {
-        toast.error('Member is already assigned to a lead');
+        toast.error('Deployment Conflict: Member is already assigned to a lead');
         return false;
       }
 

@@ -51,70 +51,76 @@ export default function ManagerLoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#020617] flex items-center justify-center p-6 relative overflow-hidden">
-      {/* Executive Backdrop */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-900/20 blur-[150px] rounded-full" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-slate-900/30 blur-[150px] rounded-full" />
+    <div className="min-h-screen bg-[#020617] flex items-center justify-center p-6 transition-colors duration-300 relative overflow-hidden font-outfit">
+      {/* Background Decoration */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-blue-600/10 blur-[150px] rounded-full" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-indigo-600/10 blur-[150px] rounded-full" />
       </div>
 
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-sm z-10"
+        className="w-full max-w-md bg-white/5 backdrop-blur-3xl rounded-[3rem] border border-white/10 shadow-[0_40px_80px_rgba(0,0,0,0.5)] p-10 md:p-12 z-10 relative overflow-hidden"
       >
-        <div className="bg-slate-900/40 backdrop-blur-3xl border border-slate-800/50 rounded-[3rem] p-10 sm:p-12 shadow-2xl space-y-10">
-          <div className="text-center space-y-3">
-            <div className="flex justify-center mb-6">
-              <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-xl">
-                <Briefcase className="w-7 h-7 text-slate-900" />
-              </div>
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent opacity-30" />
+        
+        <div className="text-center space-y-4 mb-12">
+          <div className="flex justify-center mb-8">
+            <div className="w-20 h-20 bg-white rounded-[2rem] flex items-center justify-center shadow-[0_20px_40px_rgba(255,255,255,0.1)] group">
+              <Briefcase className="w-10 h-10 text-slate-950 group-hover:scale-110 transition-transform" />
             </div>
-            <h1 className="text-2xl font-black tracking-tight text-white uppercase italic">Executive</h1>
-            <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.4em]">Managerial Oversight</p>
           </div>
+          <h1 className="text-4xl font-black tracking-tighter text-white uppercase italic">Executive</h1>
+          <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.5em] opacity-60">Managerial Oversight v4.0</p>
+        </div>
 
-          <form onSubmit={handleLogin} className="space-y-6">
-            <div className="space-y-4">
+        <form onSubmit={handleLogin} className="space-y-8">
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <label className="text-[11px] font-black text-slate-500 uppercase tracking-[0.3em] ml-1">Identity ID</label>
               <div className="relative group">
-                <Hash className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600 group-focus-within:text-blue-400 transition-colors" />
+                <Hash className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-600 group-focus-within:text-white transition-colors" />
                 <input
                   type="text"
                   inputMode="numeric"
                   placeholder="ID NUMBER"
                   value={employeeId}
                   onChange={(e) => setEmployeeId(e.target.value.replace(/[^0-9]/g, ''))}
-                  className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-2xl focus:outline-none focus:border-blue-500/50 transition-all font-bold text-white text-xs tracking-widest placeholder:text-slate-700"
-                  required
-                />
-              </div>
-
-              <div className="relative group">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600 group-focus-within:text-blue-400 transition-colors" />
-                <input
-                  type="password"
-                  placeholder="SECURITY KEY"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-2xl focus:outline-none focus:border-blue-500/50 transition-all font-bold text-white text-xs tracking-widest placeholder:text-slate-700"
+                  className="w-full pl-14 pr-6 py-5 bg-white/5 border border-white/5 rounded-2xl focus:outline-none focus:border-white/20 transition-all font-black text-white text-base placeholder:text-slate-800 shadow-inner"
                   required
                 />
               </div>
             </div>
 
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full py-4 bg-white text-slate-900 rounded-2xl shadow-xl hover:bg-blue-50 transition-all font-black uppercase tracking-[0.2em] text-[10px] flex items-center justify-center gap-2 disabled:bg-slate-800 disabled:text-slate-500"
-            >
-              {isLoading ? 'Verifying...' : 'Authenticate'}
-              {!isLoading && <ArrowRight className="w-4 h-4" />}
-            </button>
-          </form>
-        </div>
+            <div className="space-y-2">
+              <label className="text-[11px] font-black text-slate-500 uppercase tracking-[0.3em] ml-1">Access Protocol</label>
+              <div className="relative group">
+                <Lock className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-600 group-focus-within:text-white transition-colors" />
+                <input
+                  type="password"
+                  placeholder="SECURITY KEY"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full pl-14 pr-6 py-5 bg-white/5 border border-white/5 rounded-2xl focus:outline-none focus:border-white/20 transition-all font-black text-white text-base placeholder:text-slate-800 shadow-inner"
+                  required
+                />
+              </div>
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="w-full py-6 bg-white text-slate-950 rounded-[2rem] shadow-2xl hover:scale-[1.02] active:scale-95 transition-all font-black uppercase tracking-[0.3em] text-xs flex items-center justify-center gap-4 disabled:opacity-10 disabled:grayscale overflow-hidden relative group"
+          >
+            <span className="relative z-10">{isLoading ? 'Verifying...' : 'Unlock Portal'}</span>
+            {!isLoading && <ArrowRight className="w-5 h-5 relative z-10 group-hover:translate-x-1 transition-transform" />}
+          </button>
+        </form>
 
         <div className="mt-12 text-center">
-          <p className="text-[8px] font-black text-slate-600 uppercase tracking-[0.5em]">System Protected by Audit Protocol v3.0</p>
+          <p className="text-[8px] font-black text-slate-600 uppercase tracking-[0.5em] opacity-40">System Protected by Audit Protocol v4.0</p>
         </div>
       </motion.div>
     </div>

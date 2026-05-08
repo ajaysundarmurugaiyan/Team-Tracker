@@ -91,13 +91,15 @@ export default function HomePage() {
               </button>
             )}
             
-            <button
-              onClick={() => router.push('/log')}
-              className="flex-1 sm:flex-none px-6 sm:px-8 py-3 sm:py-4 bg-slate-900 text-white rounded-xl shadow-xl shadow-slate-900/10 hover:bg-black transition-all font-black uppercase tracking-[0.15em] sm:tracking-[0.2em] text-[9px] sm:text-[10px] flex items-center justify-center gap-2 sm:gap-3 border border-white/10"
-            >
-              <Plus className="w-3.5 h-3.5 sm:w-4 h-4 text-emerald-400" />
-              <span>Initialize Capture</span>
-            </button>
+            {profile?.role !== 'manager' && (
+              <button
+                onClick={() => router.push('/log')}
+                className="flex-1 sm:flex-none px-6 sm:px-8 py-3 sm:py-4 bg-slate-900 text-white rounded-xl shadow-xl shadow-slate-900/10 hover:bg-black transition-all font-black uppercase tracking-[0.15em] sm:tracking-[0.2em] text-[9px] sm:text-[10px] flex items-center justify-center gap-2 sm:gap-3 border border-white/10"
+              >
+                <Plus className="w-3.5 h-3.5 sm:w-4 h-4 text-emerald-400" />
+                <span>Initialize Capture</span>
+              </button>
+            )}
 
             <button
               onClick={signOut}

@@ -24,9 +24,11 @@ export default function ManagerDashboard() {
   const [userLogs, setUserLogs] = useState<any[]>([]);
   const [logsLoading, setLogsLoading] = useState(false);
 
+  const [showSidebar, setShowSidebar] = useState(true);
+
   useEffect(() => {
     if (!profileLoading && profile?.role !== 'manager') {
-      router.push('/manager-login');
+      router.replace('/manager-login');
     } else if (profile?.role === 'manager') {
       loadStats();
     }
@@ -60,31 +62,32 @@ export default function ManagerDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-300 flex flex-col md:flex-row font-outfit">
+    <div className="min-h-screen bg-[#020617] text-slate-300 flex flex-col md:flex-row font-outfit overflow-hidden">
       {/* Executive Sidebar: Recycler View for Leads */}
-      <div className="w-full md:w-80 bg-slate-900/50 border-r border-slate-800/50 backdrop-blur-xl flex flex-col h-screen overflow-hidden z-20">
-        <div className="p-8 border-b border-slate-800/50 space-y-6">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center shadow-2xl">
-              <Globe className="w-6 h-6 text-white" />
+      <div className={`w-full md:w-96 bg-slate-900/10 border-r border-white/5 backdrop-blur-3xl flex flex-col h-screen z-30 transition-all duration-500 relative ${!showSidebar && '-translate-x-full md:translate-x-0'}`}>
+        <div className="absolute inset-0 bg-gradient-to-b from-blue-600/5 to-transparent pointer-events-none" />
+        <div className="p-10 border-b border-white/5 space-y-10 relative z-10">
+          <div className="flex items-center gap-6">
+            <div className="w-16 h-16 bg-white rounded-3xl flex items-center justify-center shadow-[0_20px_40px_rgba(255,255,255,0.1)] group">
+              <Globe className="w-8 h-8 text-slate-950 group-hover:rotate-180 transition-transform duration-1000" />
             </div>
             <div>
-              <h1 className="text-sm font-black text-white uppercase tracking-[0.3em]">Oversight</h1>
-              <p className="text-[8px] font-bold text-slate-500 uppercase tracking-widest">Global Executive</p>
+              <h1 className="text-xl font-black text-white uppercase tracking-[0.3em] italic">Oversight</h1>
+              <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.5em] opacity-50">Global Executive</p>
             </div>
           </div>
           <button 
             onClick={signOut}
-            className="w-full py-4 px-4 bg-white/5 border border-white/5 rounded-xl text-[9px] font-black uppercase tracking-widest text-slate-400 hover:text-white hover:bg-red-500/10 hover:border-red-500/20 transition-all flex items-center justify-between"
+            className="w-full py-5 px-6 bg-white/5 border border-white/5 rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 hover:text-white hover:bg-red-500/10 hover:border-red-500/20 transition-all flex items-center justify-between group shadow-2xl"
           >
             <span>Terminate Session</span>
-            <Zap className="w-3.5 h-3.5" />
+            <Zap className="w-4 h-4 group-hover:scale-125 transition-transform" />
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-slate-800">
-          <h2 className="px-4 text-[9px] font-black text-slate-600 uppercase tracking-[0.2em]">Tier-1 Operational Leads</h2>
-          <div className="space-y-1">
+        <div className={`flex-1 overflow-y-auto p-6 space-y-6 scrollbar-thin scrollbar-thumb-white/5 relative z-10 ${!showSidebar && 'hidden md:block'}`}>
+          <h2 className="px-4 text-[10px] font-black text-slate-600 uppercase tracking-[0.4em]">Tier-1 Operational Leads</h2>
+          <div className="space-y-2">
             {data?.leads.map(lead => (
               <button
                 key={lead.id}
@@ -92,29 +95,30 @@ export default function ManagerDashboard() {
                   setSelectedLead(lead);
                   setSelectedUser(null);
                   setUserLogs([]);
+                  if (window.innerWidth < 768) setShowSidebar(false);
                 }}
-                className={`w-full p-5 rounded-2xl transition-all text-left flex items-center justify-between group relative overflow-hidden ${
+                className={`w-full p-6 rounded-[2rem] transition-all text-left flex items-center justify-between group relative overflow-hidden ${
                   selectedLead?.id === lead.id 
-                  ? 'bg-white text-slate-950 shadow-2xl' 
+                  ? 'bg-white text-slate-950 shadow-[0_20px_50px_rgba(255,255,255,0.1)] scale-[1.02]' 
                   : 'hover:bg-white/5 text-slate-400'
                 }`}
               >
                 <div className="relative z-10">
-                  <p className="text-[11px] font-black uppercase tracking-tight">{lead.full_name}</p>
-                  <p className={`text-[8px] font-bold uppercase tracking-widest mt-0.5 ${selectedLead?.id === lead.id ? 'text-slate-500' : 'text-slate-600'}`}>
+                  <p className="text-xs font-black uppercase tracking-tight">{lead.full_name}</p>
+                  <p className={`text-[9px] font-black uppercase tracking-[0.2em] mt-1 ${selectedLead?.id === lead.id ? 'text-slate-500' : 'text-slate-600'}`}>
                     {membersUnderLead(lead.id).length} Active Assets
                   </p>
                 </div>
-                <ChevronRight className={`w-3.5 h-3.5 relative z-10 ${selectedLead?.id === lead.id ? 'opacity-100' : 'opacity-0'}`} />
+                <ChevronRight className={`w-5 h-5 relative z-10 transition-transform group-hover:translate-x-1 ${selectedLead?.id === lead.id ? 'opacity-100' : 'opacity-0'}`} />
               </button>
             ))}
           </div>
         </div>
 
-        <div className="p-6 bg-white/5 border-t border-slate-800/50">
-          <div className="flex items-center gap-3">
-            <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-            <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Network Secure</span>
+        <div className="p-8 bg-white/5 border-t border-white/5 relative z-10">
+          <div className="flex items-center gap-4">
+            <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.8)]" />
+            <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em]">Network Secure</span>
           </div>
         </div>
       </div>
@@ -130,24 +134,30 @@ export default function ManagerDashboard() {
               className="max-w-5xl mx-auto space-y-16"
             >
               {/* Executive Unit Header */}
-              <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-10 border-b border-slate-800/50 pb-12">
-                <div className="space-y-4">
-                  <div className="flex items-center gap-4">
-                    <span className="px-3 py-1 bg-white/10 text-white text-[8px] font-black uppercase tracking-[0.3em] rounded-full border border-white/10">Unit Alpha</span>
-                    <h2 className="text-5xl font-black text-white tracking-tighter uppercase">{selectedLead.full_name}</h2>
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-12 border-b border-white/5 pb-16">
+                <div className="space-y-6">
+                  <div className="flex items-center gap-6">
+                    <button 
+                      onClick={() => setShowSidebar(true)}
+                      className="md:hidden w-12 h-12 bg-white/5 rounded-2xl border border-white/10 flex items-center justify-center hover:bg-white/10 transition-all shadow-2xl"
+                    >
+                      <List className="w-5 h-5 text-white" />
+                    </button>
+                    <span className="px-4 py-1.5 bg-white/5 text-white text-[10px] font-black uppercase tracking-[0.4em] rounded-xl border border-white/10 shadow-inner">Operational Unit</span>
+                    <h2 className="text-5xl md:text-7xl font-black text-white tracking-tighter uppercase italic">{selectedLead.full_name}</h2>
                   </div>
-                  <p className="text-xs font-bold text-slate-500 uppercase tracking-[0.3em]">Performing Tier-2 unit deep-dive and audit analysis</p>
+                  <p className="text-[11px] font-black text-slate-500 uppercase tracking-[0.5em] opacity-60">Performing Tier-2 unit deep-dive and audit analysis</p>
                 </div>
                 
                 <button 
                   onClick={() => handleUserSelect(selectedLead)}
-                  className={`px-8 py-5 rounded-[2rem] font-black uppercase text-[10px] tracking-[0.2em] transition-all flex items-center gap-4 shadow-2xl border ${
+                  className={`w-full md:w-auto px-10 py-6 rounded-[2.5rem] font-black uppercase text-[11px] tracking-[0.3em] transition-all flex items-center justify-center md:justify-start gap-6 shadow-[0_20px_40px_rgba(0,0,0,0.3)] border hover:scale-105 active:scale-95 ${
                     selectedUser?.id === selectedLead.id 
                     ? 'bg-white text-slate-950 border-white' 
-                    : 'bg-transparent text-white border-white/10 hover:bg-white hover:text-slate-950'
+                    : 'bg-white/5 text-white border-white/10 hover:bg-white/10'
                   }`}
                 >
-                  <BarChart className="w-4 h-4" />
+                  <BarChart className="w-5 h-5" />
                   Audit Lead Metrics
                 </button>
               </div>
@@ -161,21 +171,21 @@ export default function ManagerDashboard() {
                       <button
                         key={member.id}
                         onClick={() => handleUserSelect(member)}
-                        className={`w-full p-5 rounded-2xl transition-all text-left flex items-center gap-5 group relative ${
+                        className={`w-full p-6 rounded-[2rem] transition-all text-left flex items-center gap-6 group relative overflow-hidden ${
                           selectedUser?.id === member.id 
-                          ? 'bg-white text-slate-950 shadow-2xl scale-[1.02]' 
+                          ? 'bg-white text-slate-950 shadow-[0_20px_40px_rgba(255,255,255,0.1)] scale-[1.02]' 
                           : 'bg-white/5 border border-white/5 hover:bg-white/10'
                         }`}
                       >
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-[10px] ${
+                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black text-xs ${
                           selectedUser?.id === member.id ? 'bg-slate-950 text-white' : 'bg-slate-900 text-slate-500'
                         }`}>
                           {member.full_name[0]}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-[11px] font-black uppercase truncate">{member.full_name}</p>
-                          <p className={`text-[8px] font-bold uppercase tracking-tighter ${selectedUser?.id === member.id ? 'text-slate-500' : 'text-slate-600'}`}>
-                            Asset ID: {member.employee_id}
+                          <p className="text-xs font-black uppercase tracking-tight">{member.full_name}</p>
+                          <p className={`text-[9px] font-black uppercase tracking-[0.2em] mt-1 ${selectedUser?.id === member.id ? 'text-slate-500' : 'text-slate-600'}`}>
+                            ID: {member.employee_id}
                           </p>
                         </div>
                       </button>
@@ -197,7 +207,7 @@ export default function ManagerDashboard() {
                     </h3>
                     {selectedUser && (
                       <span className="px-3 py-1 bg-white/5 text-white text-[8px] font-black uppercase tracking-[0.2em] rounded-md border border-white/5">
-                        {userLogs.length} Records Decrypted
+                        {userLogs.length} Records Verified
                       </span>
                     )}
                   </div>
@@ -214,21 +224,24 @@ export default function ManagerDashboard() {
                           initial={{ opacity: 0, x: 10 }}
                           animate={{ opacity: 1, x: 0 }}
                           key={log.id} 
-                          className="bg-white/5 p-8 rounded-[2.5rem] border border-white/5 backdrop-blur-md space-y-8 hover:bg-white/10 transition-colors group"
+                          className="bg-white/5 p-10 rounded-[3rem] border border-white/5 backdrop-blur-3xl space-y-10 hover:bg-white/10 transition-all group relative overflow-hidden"
                         >
-                          <div className="flex items-center justify-between border-b border-white/5 pb-6">
-                            <div className="flex items-center gap-4">
-                              <Calendar className="w-4 h-4 text-slate-500" />
-                              <span className="text-[11px] font-black text-white uppercase tracking-widest">{formatDate(log.date)}</span>
+                          <div className="absolute inset-0 bg-gradient-to-br from-blue-600/5 to-transparent pointer-events-none" />
+                          <div className="flex items-center justify-between border-b border-white/5 pb-8 relative z-10">
+                            <div className="flex items-center gap-5">
+                              <Calendar className="w-5 h-5 text-slate-500" />
+                              <span className="text-xs font-black text-white uppercase tracking-[0.2em]">{formatDate(log.date)}</span>
                             </div>
-                            <div className="flex items-center gap-4 text-slate-500">
-                              <Clock className="w-4 h-4" />
-                              <span className="text-[9px] font-black uppercase tracking-widest">{new Date(log.createdAt).toLocaleTimeString()}</span>
+                            <div className="flex items-center gap-5 text-slate-500">
+                              <Clock className="w-5 h-5" />
+                              <span className="text-[10px] font-black uppercase tracking-[0.3em]">
+                                {log.createdAt ? new Date(log.createdAt).toLocaleTimeString() : 'N/A'}
+                              </span>
                             </div>
                           </div>
                           
-                          <div className="space-y-6">
-                            <p className="text-sm font-bold text-slate-300 leading-loose italic border-l-2 border-white/10 pl-6 group-hover:border-white/30 transition-colors">
+                          <div className="space-y-8 relative z-10">
+                            <p className="text-sm font-black text-slate-300 leading-relaxed italic border-l-4 border-blue-500/30 pl-8 group-hover:border-blue-500 transition-colors">
                               &quot;{log.content}&quot;
                             </p>
                             
@@ -245,7 +258,7 @@ export default function ManagerDashboard() {
                     ) : (
                       <div className="py-48 text-center space-y-8 bg-white/5 rounded-[4rem] border border-white/5 border-dashed">
                         <Activity className="w-16 h-16 text-slate-800 mx-auto" />
-                        <p className="text-[11px] font-black text-slate-600 uppercase tracking-[0.4em]">Select an Asset to Decrypt History</p>
+                        <p className="text-[11px] font-black text-slate-600 uppercase tracking-[0.4em]">Select a Lead or Asset to View Data</p>
                       </div>
                     )}
                     

@@ -2,7 +2,7 @@
 import { useProfile } from '@/hooks/useProfile';
 import { useLogs } from '@/hooks/useLogs';
 import { motion } from 'framer-motion';
-import { Award, Target, Code, Brain, Sparkles, TrendingUp } from 'lucide-react';
+import { Target, Code, Brain, Sparkles, TrendingUp } from 'lucide-react';
 import { useMemo, useState, useEffect } from 'react';
 
 export default function ProfileCard({ profile: managedProfile, logs: managedLogs }: { profile?: any, logs?: any[] }) {
@@ -111,7 +111,7 @@ export default function ProfileCard({ profile: managedProfile, logs: managedLogs
         </div>
         <div className="flex items-center gap-4 mb-6 relative z-10">
           <div className="w-14 h-14 bg-slate-900 rounded-2xl flex items-center justify-center text-xl font-black text-white shadow-2xl relative shrink-0">
-            {profile.name[0]}
+            {profile.name?.[0] || '?'}
             <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 rounded-lg flex items-center justify-center shadow-lg border-2 border-white">
                <TrendingUp className="w-3 h-3 text-white" />
             </div>
@@ -144,15 +144,15 @@ export default function ProfileCard({ profile: managedProfile, logs: managedLogs
             <h4 className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Core Competencies</h4>
           </div>
           <div className="flex flex-wrap gap-2">
-            {profile.skills.map((skill) => (
+            {(profile.skills || []).map((skill: any) => (
               <div key={skill.name} className="flex items-center gap-2 p-2 bg-slate-50 border border-slate-200 rounded-xl group hover:border-blue-500/50 hover:bg-white transition-all shadow-sm">
                 <span className="text-[9px] font-black text-slate-700 uppercase tracking-tight">{skill.name}</span>
                 <span className="w-5 h-5 bg-white border border-slate-200 rounded-md flex items-center justify-center text-[8px] font-black text-slate-400 group-hover:text-blue-600">
-                  {skill.count}
+                  {skill.count || 0}
                 </span>
               </div>
             ))}
-            {profile.skills.length === 0 && (
+            {(!profile.skills || profile.skills.length === 0) && (
               <p className="text-[8px] font-black text-slate-300 uppercase tracking-widest italic">No telemetry data detected</p>
             )}
           </div>

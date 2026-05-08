@@ -5,7 +5,7 @@ import { useLogs } from '@/hooks/useLogs';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Users, Search, ChevronRight, ArrowLeft, ShieldAlert, CheckCircle2,
+  Users, Search, ChevronRight, ArrowLeft, ShieldAlert, CheckCircle2, ShieldCheck,
   FileText, Zap, Award, Target, List, Brain, Sparkles, Code, Plus,
   Activity, BarChart3, Database
 } from 'lucide-react';

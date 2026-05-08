@@ -61,19 +61,19 @@ export default function LeadLoginPage() {
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md bg-white rounded-[3rem] border border-slate-200 shadow-[0_40px_100px_-20px_rgba(0,0,0,0.1)] p-10 md:p-14 z-10 relative overflow-hidden"
+        className="w-full max-w-md bg-white rounded-[2.5rem] border border-slate-200 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.08)] p-8 md:p-10 z-10 relative overflow-hidden"
       >
         <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-blue-600 via-blue-500 to-indigo-600" />
         
-        <div className="text-center space-y-6 mb-12">
+        <div className="text-center space-y-4 mb-10">
           <div className="flex justify-center">
-            <div className="w-16 h-16 bg-blue-600 rounded-[1.5rem] flex items-center justify-center shadow-2xl group">
-              <ShieldCheck className="w-8 h-8 text-white group-hover:scale-110 transition-transform" />
+            <div className="w-14 h-14 bg-blue-600 rounded-2xl flex items-center justify-center shadow-xl group">
+              <ShieldCheck className="w-7 h-7 text-white group-hover:scale-110 transition-transform" />
             </div>
           </div>
           <div>
-            <h1 className="text-3xl font-black tracking-tight text-slate-900 uppercase">Lead Portal</h1>
-            <p className="text-[10px] font-black text-blue-500 uppercase tracking-[0.4em] mt-2">Operational Oversight</p>
+            <h1 className="text-2xl font-black tracking-tight text-slate-900 uppercase">Lead Portal</h1>
+            <p className="text-[9px] font-black text-blue-500 uppercase tracking-[0.3em] mt-1.5">Operational Oversight</p>
           </div>
         </div>
 
@@ -104,21 +104,23 @@ export default function LeadLoginPage() {
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-14 pr-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:outline-none focus:border-slate-300 transition-all font-bold text-slate-900 text-sm placeholder:text-slate-300"
+                  className="w-full pl-12 pr-6 py-3.5 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:border-slate-300 transition-all font-bold text-slate-900 text-xs placeholder:text-slate-300"
                   required
                 />
               </div>
             </div>
           </div>
 
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full py-5 bg-slate-900 text-white rounded-2xl shadow-xl hover:bg-black hover:scale-[1.01] active:scale-[0.98] transition-all font-black uppercase tracking-[0.2em] text-[10px] flex items-center justify-center gap-3 disabled:opacity-50"
-          >
-            <span>{isLoading ? 'Verifying...' : 'Unlock Oversight'}</span>
-            {!isLoading && <ArrowRight className="w-4 h-4" />}
-          </button>
+          <div className="pt-2 space-y-5">
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full py-4 bg-slate-900 text-white rounded-xl shadow-lg hover:bg-black active:scale-[0.98] transition-all font-black uppercase tracking-[0.15em] text-[10px] flex items-center justify-center gap-3 disabled:opacity-50"
+            >
+              <span>{isLoading ? 'Synchronizing...' : 'Establish Command'}</span>
+              {!isLoading && <ArrowRight className="w-4 h-4" />}
+            </button>
+          </div>
         </form>
       </motion.div>
     </div>

@@ -119,7 +119,7 @@ export default function ProfileCard({ profile: managedProfile, logs: managedLogs
           <div className="min-w-0">
             <h3 className="text-2xl font-black text-slate-900 tracking-tighter truncate">{profile.name}</h3>
             <div className="flex flex-wrap items-center gap-3 mt-2">
-              <span className="px-2 py-0.5 bg-slate-950 text-white text-[9px] font-black uppercase tracking-[0.2em] rounded-md">{profile.role}</span>
+              <span className="px-2 py-0.5 bg-slate-100 text-slate-900 text-[9px] font-black uppercase tracking-[0.2em] rounded-md border border-slate-200">{profile.role}</span>
               <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] bg-slate-100 px-3 py-1 rounded-md truncate">ID: {profile.employeeId}</span>
             </div>
           </div>
@@ -161,18 +161,20 @@ export default function ProfileCard({ profile: managedProfile, logs: managedLogs
           </div>
         </section>
 
-        <section className="p-8 bg-slate-950 rounded-[2.5rem] text-white shadow-2xl shadow-slate-900/20 space-y-4 relative overflow-hidden group">
-          <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-            <Brain className="w-20 h-20" />
+        <section className="p-8 bg-white border border-slate-100 rounded-[2.5rem] shadow-xl shadow-slate-200/50 space-y-4 relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-4 opacity-[0.03] group-hover:opacity-10 transition-opacity">
+            <Brain className="w-20 h-20 text-slate-900" />
           </div>
           <div className="flex items-center gap-3 relative z-10">
-            <Brain className="w-5 h-5 text-emerald-400" />
-            <h4 className="text-[9px] font-black uppercase tracking-[0.4em] text-emerald-400 flex items-center gap-3">
+            <div className="w-8 h-8 bg-emerald-50 rounded-lg flex items-center justify-center">
+              <Brain className="w-4 h-4 text-emerald-600" />
+            </div>
+            <h4 className="text-[9px] font-black uppercase tracking-[0.4em] text-emerald-600 flex items-center gap-3">
               Growth Intel
               {isLoadingIntel && <Sparkles className="w-4 h-4 animate-spin" />}
             </h4>
           </div>
-          <p className="text-[12px] font-bold leading-relaxed text-slate-400 italic border-l-2 border-emerald-500/30 pl-6 relative z-10">
+          <p className="text-[12px] font-bold leading-relaxed text-slate-600 italic border-l-2 border-emerald-500/30 pl-6 relative z-10">
             &quot;{growthIntel}&quot;
           </p>
         </section>

@@ -139,12 +139,12 @@ export default function LoggerWizard({ onComplete }: Props) {
         </div>
         <div className="flex items-center justify-between mb-10 relative z-10">
           <div className="flex items-center gap-6">
-            <div className="w-14 h-14 bg-slate-900 rounded-2xl flex items-center justify-center shadow-xl group">
-              <Rocket className="w-7 h-7 text-white group-hover:scale-110 transition-transform" />
+            <div className="w-12 h-12 bg-slate-900 rounded-xl flex items-center justify-center shadow-lg group">
+              <Rocket className="w-6 h-6 text-white group-hover:scale-110 transition-transform" />
             </div>
             <div>
-              <h3 className="text-2xl font-black text-slate-900 tracking-tight uppercase">Capture Session</h3>
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em]">Strategic Intelligence</p>
+              <h3 className="text-xl font-black text-slate-900 tracking-tight uppercase">Capture Session</h3>
+              <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em]">Performance Analytics</p>
             </div>
           </div>
         </div>
@@ -154,16 +154,16 @@ export default function LoggerWizard({ onComplete }: Props) {
       <div className="p-10 min-h-[480px] flex flex-col">
         <AnimatePresence mode="wait">
           {step === 1 && (
-            <motion.div key="step1" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-8 flex-1">
+            <motion.div key="step1" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-6 flex-1">
               <div>
-                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] mb-6 flex items-center gap-3">
+                <h4 className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4 flex items-center gap-3">
                   <Code className="w-4 h-4 text-blue-500" /> Core Objective
                 </h4>
                 <textarea
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
                   placeholder={isLearningOnly ? "Describe technical concepts..." : "Outline tasks completed..."}
-                  className="w-full h-56 p-8 bg-slate-50 border border-slate-100 rounded-3xl focus:outline-none focus:border-slate-300 focus:bg-white transition-all font-bold text-slate-900 placeholder:text-slate-200 text-lg tracking-tight shadow-inner"
+                  className="w-full h-48 p-6 bg-slate-50 border border-slate-100 rounded-2xl focus:outline-none focus:border-slate-300 focus:bg-white transition-all font-medium text-slate-900 placeholder:text-slate-300 text-sm tracking-tight shadow-sm"
                 />
               </div>
             </motion.div>
@@ -244,16 +244,16 @@ export default function LoggerWizard({ onComplete }: Props) {
           )}
 
           {step === 3 && (
-            <motion.div key="step3" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-8 flex-1">
+            <motion.div key="step3" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-6 flex-1">
               <div>
-                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] mb-6 flex items-center gap-3">
+                <h4 className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4 flex items-center gap-3">
                   <Brain className="w-4 h-4 text-blue-500" /> Strategic Insight
                 </h4>
                 <textarea
                   value={learnings}
                   onChange={(e) => setLearnings(e.target.value)}
                   placeholder="Identify a strategic takeaway..."
-                  className="w-full h-56 p-8 bg-slate-50 border border-slate-100 rounded-3xl focus:outline-none focus:border-slate-300 focus:bg-white transition-all font-bold text-slate-900 placeholder:text-slate-200 text-lg tracking-tight shadow-inner"
+                  className="w-full h-48 p-6 bg-slate-50 border border-slate-100 rounded-2xl focus:outline-none focus:border-slate-300 focus:bg-white transition-all font-medium text-slate-900 placeholder:text-slate-300 text-sm tracking-tight shadow-sm"
                 />
               </div>
             </motion.div>
@@ -281,25 +281,25 @@ export default function LoggerWizard({ onComplete }: Props) {
           )}
         </AnimatePresence>
 
-        <div className="mt-16 flex justify-between items-center pt-10 border-t border-slate-100">
+        <div className="mt-12 flex justify-between items-center pt-8 border-t border-slate-100">
           {step > 1 && step < 4 ? (
-            <button onClick={() => setStep(step - 1)} className="px-8 py-3 text-slate-400 font-black hover:text-slate-900 transition-colors uppercase tracking-[0.3em] text-[10px]">Back</button>
+            <button onClick={() => setStep(step - 1)} className="px-6 py-2 text-slate-400 font-black hover:text-slate-900 transition-colors uppercase tracking-[0.2em] text-[9px]">Back</button>
           ) : <div />}
           
           <button
             onClick={handleNext}
             disabled={(step === 1 && !content.trim()) || isSummarizing || isSyncing || (step === 4 && (!aiSummary || !content.trim()))}
-            className="px-10 py-5 bg-slate-900 text-white rounded-[2rem] shadow-xl hover:bg-black hover:scale-105 active:scale-95 transition-all font-black uppercase tracking-[0.2em] text-[11px] flex items-center gap-4 disabled:opacity-10"
+            className="px-8 py-4 bg-slate-900 text-white rounded-xl shadow-lg hover:bg-black active:scale-[0.98] transition-all font-black uppercase tracking-[0.15em] text-[10px] flex items-center gap-4 disabled:opacity-10"
           >
             {step === 4 ? (
               <>
-                <Check className="w-5 h-5 stroke-[3px]" />
+                <Check className="w-4 h-4 stroke-[3px]" />
                 <span>{isSyncing ? 'Synchronizing...' : 'Commit to History'}</span>
               </>
             ) : (
               <>
                 <span>{step === 3 ? 'Finalize Audit' : 'Proceed'}</span>
-                <ArrowRight className="w-5 h-5" />
+                <ArrowRight className="w-4 h-4" />
               </>
             )}
           </button>

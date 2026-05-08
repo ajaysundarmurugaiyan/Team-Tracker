@@ -62,19 +62,19 @@ export default function LoginPage() {
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md bg-white rounded-[3rem] border border-slate-200 shadow-[0_40px_100px_-20px_rgba(0,0,0,0.1)] p-10 md:p-14 z-10 relative overflow-hidden"
+        className="w-full max-w-md bg-white rounded-[2.5rem] border border-slate-200 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.08)] p-8 md:p-10 z-10 relative overflow-hidden"
       >
         <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-blue-500 via-indigo-500 to-blue-500" />
         
-        <div className="text-center space-y-6 mb-12">
+        <div className="text-center space-y-4 mb-10">
           <div className="flex justify-center">
-            <div className="w-16 h-16 bg-slate-900 rounded-[1.5rem] flex items-center justify-center shadow-2xl group">
-              <Zap className="w-8 h-8 text-white group-hover:scale-110 transition-transform" />
+            <div className="w-14 h-14 bg-slate-900 rounded-2xl flex items-center justify-center shadow-xl group">
+              <Zap className="w-7 h-7 text-white group-hover:scale-110 transition-transform" />
             </div>
           </div>
           <div>
-            <h1 className="text-3xl font-black tracking-tight text-slate-900 uppercase">Team Tracker</h1>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] mt-2">Secure Access Portal</p>
+            <h1 className="text-2xl font-black tracking-tight text-slate-900 uppercase">Team Tracker</h1>
+            <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] mt-1.5">Secure Access Portal</p>
           </div>
         </div>
 
@@ -113,11 +113,11 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <div className="pt-4 space-y-6">
+          <div className="pt-2 space-y-5">
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-5 bg-slate-900 text-white rounded-2xl shadow-xl hover:bg-black hover:scale-[1.01] active:scale-[0.98] transition-all font-black uppercase tracking-[0.2em] text-[10px] flex items-center justify-center gap-3 disabled:opacity-50"
+              className="w-full py-4 bg-slate-900 text-white rounded-xl shadow-lg hover:bg-black active:scale-[0.98] transition-all font-black uppercase tracking-[0.15em] text-[10px] flex items-center justify-center gap-3 disabled:opacity-50"
             >
               <span>{isLoading ? 'Verifying...' : 'Sign In'}</span>
               {!isLoading && <ArrowRight className="w-4 h-4" />}

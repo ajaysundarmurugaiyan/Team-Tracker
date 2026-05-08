@@ -67,7 +67,7 @@ export default function LogPage() {
   return (
     <div className="min-h-screen p-6 md:p-12 lg:p-20 bg-[#f8fafc] font-outfit overflow-hidden relative">
       <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-indigo-500/5 pointer-events-none" />
-      <div className="max-w-4xl mx-auto relative z-10">
+      <div className="max-w-7xl mx-auto relative z-10">
         <button
           onClick={() => router.push('/')}
           className="mb-12 w-10 h-10 rounded-xl bg-white flex items-center justify-center hover:bg-slate-50 transition-all border border-slate-200 group shadow-sm"

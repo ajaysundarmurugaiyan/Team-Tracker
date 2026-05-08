@@ -51,18 +51,21 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
           return;
         }
 
-        // Try to get session with a timeout
+        // Try to get session with a safer timeout
         const sessionPromise = supabase.auth.getSession();
         const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Session fetch timeout')), 10000) // Reduced to 10s for faster feedback
+          setTimeout(() => reject(new Error('Auth Service Timeout')), 20000) 
         );
 
-        const raceResult = await Promise.race([sessionPromise, timeoutPromise]) as any;
+        const raceResult = await Promise.race([sessionPromise, timeoutPromise]).catch(err => {
+          console.warn('Auth synchronization delayed:', err.message);
+          return { data: { session: null }, error: null };
+        }) as any;
+        
         const { data: { session }, error } = raceResult || { data: { session: null }, error: null };
         
         if (error) {
-          console.error('Session error:', error);
-          setConnectionError('offline');
+          console.error('Session retrieval error:', error);
           if (mounted) setLoading(false);
           return;
         }

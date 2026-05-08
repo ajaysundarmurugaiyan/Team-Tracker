@@ -118,8 +118,8 @@ export default function CalendarGrid({ logs: managedLogs }: { logs?: WorkLog[] }
 
       <div className="grid grid-cols-7 border-b border-slate-100 bg-white">
         {dayNames.map(day => (
-          <div key={day} className="py-4 text-center border-r last:border-r-0 border-slate-50">
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{day}</span>
+          <div key={day} className="py-3 text-center border-r last:border-r-0 border-slate-50">
+            <span className="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em]">{day}</span>
           </div>
         ))}
       </div>

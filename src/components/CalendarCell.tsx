@@ -31,9 +31,9 @@ export default function CalendarCell({ date, logs, onClick }: Props) {
       }`}
     >
       <div className="flex items-center justify-between w-full">
-        <span className={`text-[10px] font-black ${
+        <span className={`text-[8px] font-black ${
           isToday 
-            ? 'text-white bg-slate-900 w-5 h-5 rounded-md flex items-center justify-center' 
+            ? 'text-white bg-slate-900 w-4 h-4 rounded-md flex items-center justify-center' 
             : 'text-slate-400'
         }`}>
           {day}

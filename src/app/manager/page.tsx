@@ -14,12 +14,6 @@ import { formatDate } from '@/lib/dates';
 
 export default function ManagerDashboard() {
   const { profile, loading: profileLoading, fetchManagerStats, signOut } = useProfile();
-import CalendarGrid from '@/components/CalendarGrid';
-import ProfileCard from '@/components/ProfileCard';
-import { useSearchParams } from 'next/navigation';
-
-export default function ManagerDashboard() {
-  const { profile, loading: profileLoading, fetchManagerStats, signOut } = useProfile();
   const { fetchLogsForUser } = useLogs();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -247,7 +241,5 @@ export default function ManagerDashboard() {
         </AnimatePresence>
       </div>
     </div>
-  );
-}
   );
 }

@@ -43,7 +43,7 @@ export default function CalendarCell({ date, logs, onClick }: Props) {
       <div className="flex-1 w-full flex items-end">
         <div className="w-full h-1.5 flex gap-[1px] rounded-full overflow-hidden transition-all duration-500 group-hover:h-2">
           {logCount === 0 ? (
-            <div className="flex-1 h-full bg-slate-100 opacity-20" />
+            <div className="flex-1 h-full bg-slate-100" />
           ) : (
             logs.map((log, i) => (
               <div 

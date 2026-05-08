@@ -32,8 +32,8 @@ export default function CalendarGrid({ logs: managedLogs }: { logs?: WorkLog[] }
     const days = getDaysInMonth(year, month);
 
     const monthLogs = logs.filter(l => {
-      const d = new Date(l.createdAt);
-      return d.getMonth() === month && d.getFullYear() === year;
+      const [y, m] = l.date.split('-').map(Number);
+      return (m - 1) === month && y === year;
     });
 
     const today = new Date();
@@ -43,8 +43,8 @@ export default function CalendarGrid({ logs: managedLogs }: { logs?: WorkLog[] }
     endOfWeek.setDate(today.getDate() + (6 - today.getDay()));
 
     const weekLogs = logs.filter(l => {
-      const d = new Date(l.createdAt);
-      return d >= startOfWeek && d <= endOfWeek;
+      const logDate = new Date(l.date);
+      return logDate >= startOfWeek && logDate <= endOfWeek;
     });
 
     return {

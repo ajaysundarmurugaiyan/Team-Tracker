@@ -114,14 +114,14 @@ export default function LoggerWizard({ onComplete }: Props) {
 
   const StepIndicator = () => (
     <div className="flex items-center justify-between mb-16 relative px-4">
-      <div className="absolute top-1/2 left-0 right-0 h-[1px] bg-white/10 -translate-y-1/2 z-0 mx-8" />
+      <div className="absolute top-1/2 left-0 right-0 h-[1px] bg-slate-100 -translate-y-1/2 z-0 mx-8" />
       {[1, 2, 3, 4].map((i) => (
         <div key={i} className="relative z-10 flex flex-col items-center gap-3">
           <div 
             className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-xs transition-all duration-300 border ${
-              step > i ? 'bg-emerald-500 border-emerald-400 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)]' :
-              step === i ? 'bg-white border-white text-slate-950 shadow-[0_0_20px_rgba(255,255,255,0.2)] scale-110' :
-              'bg-slate-950 border-white/10 text-slate-600'
+              step > i ? 'bg-emerald-500 border-emerald-400 text-white shadow-[0_0_15px_rgba(16,185,129,0.2)]' :
+              step === i ? 'bg-slate-900 border-slate-900 text-white shadow-xl scale-110' :
+              'bg-slate-50 border-slate-200 text-slate-400'
             }`}
           >
             {step > i ? <Check className="w-5 h-5 stroke-[3px]" /> : i}
@@ -132,19 +132,19 @@ export default function LoggerWizard({ onComplete }: Props) {
   );
 
   return (
-    <div className="bg-[#020617]/40 rounded-[3rem] border border-white/5 shadow-2xl backdrop-blur-3xl overflow-hidden relative transition-all duration-500">
-      <div className="px-12 py-10 border-b border-white/5 bg-white/5 relative overflow-hidden">
-        <div className="absolute top-0 right-0 p-8 opacity-5">
-          <Rocket className="w-32 h-32 text-white" />
+    <div className="bg-white rounded-[3rem] border border-slate-200 shadow-2xl overflow-hidden relative transition-all duration-500">
+      <div className="px-12 py-10 border-b border-slate-100 bg-slate-50/50 relative overflow-hidden">
+        <div className="absolute top-0 right-0 p-8 opacity-[0.03] pointer-events-none">
+          <Rocket className="w-32 h-32 text-slate-900" />
         </div>
         <div className="flex items-center justify-between mb-10 relative z-10">
           <div className="flex items-center gap-6">
-            <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-2xl group">
-              <Rocket className="w-7 h-7 text-slate-950 group-hover:scale-110 transition-transform" />
+            <div className="w-14 h-14 bg-slate-900 rounded-2xl flex items-center justify-center shadow-xl group">
+              <Rocket className="w-7 h-7 text-white group-hover:scale-110 transition-transform" />
             </div>
             <div>
-              <h3 className="text-2xl font-black text-white tracking-[0.2em] uppercase italic">Capture Session</h3>
-              <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.5em] opacity-60">Growth Engine v4.0.1</p>
+              <h3 className="text-2xl font-black text-slate-900 tracking-tight uppercase">Capture Session</h3>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em]">Strategic Intelligence</p>
             </div>
           </div>
         </div>
@@ -156,14 +156,14 @@ export default function LoggerWizard({ onComplete }: Props) {
           {step === 1 && (
             <motion.div key="step1" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-8 flex-1">
               <div>
-                <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] mb-6 flex items-center gap-3">
+                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] mb-6 flex items-center gap-3">
                   <Code className="w-4 h-4 text-blue-500" /> Core Objective
                 </h4>
                 <textarea
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
-                  placeholder={isLearningOnly ? "DESCRIBE THEORETICAL CONCEPTS..." : "OUTLINE TASKS COMPLETED..."}
-                  className="w-full h-56 p-8 bg-white/5 border border-white/5 rounded-3xl focus:outline-none focus:border-blue-500/50 transition-all font-black text-white placeholder:text-slate-700 text-xl tracking-tight shadow-inner"
+                  placeholder={isLearningOnly ? "Describe technical concepts..." : "Outline tasks completed..."}
+                  className="w-full h-56 p-8 bg-slate-50 border border-slate-100 rounded-3xl focus:outline-none focus:border-slate-300 focus:bg-white transition-all font-bold text-slate-900 placeholder:text-slate-200 text-lg tracking-tight shadow-inner"
                 />
               </div>
             </motion.div>
@@ -183,8 +183,8 @@ export default function LoggerWizard({ onComplete }: Props) {
                       onClick={() => toggleSkill(skill)}
                       className={`px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border ${
                         selectedSkills.some(s => s.toLowerCase() === skill.toLowerCase())
-                          ? 'bg-white border-white text-slate-950 shadow-[0_10px_30px_rgba(255,255,255,0.1)]'
-                          : 'bg-white/5 border-white/5 text-slate-500 hover:border-white/20'
+                          ? 'bg-slate-900 border-slate-900 text-white shadow-xl'
+                          : 'bg-slate-50 border-slate-100 text-slate-400 hover:border-slate-200'
                       }`}
                     >
                       {skill}
@@ -246,14 +246,14 @@ export default function LoggerWizard({ onComplete }: Props) {
           {step === 3 && (
             <motion.div key="step3" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-8 flex-1">
               <div>
-                <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] mb-6 flex items-center gap-3">
+                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] mb-6 flex items-center gap-3">
                   <Brain className="w-4 h-4 text-blue-500" /> Strategic Insight
                 </h4>
                 <textarea
                   value={learnings}
                   onChange={(e) => setLearnings(e.target.value)}
-                  placeholder="IDENTIFY A STRATEGIC TAKEAWAY..."
-                  className="w-full h-56 p-8 bg-white/5 border border-white/5 rounded-3xl focus:outline-none focus:border-blue-500/50 transition-all font-black text-white placeholder:text-slate-700 text-xl tracking-tight shadow-inner"
+                  placeholder="Identify a strategic takeaway..."
+                  className="w-full h-56 p-8 bg-slate-50 border border-slate-100 rounded-3xl focus:outline-none focus:border-slate-300 focus:bg-white transition-all font-bold text-slate-900 placeholder:text-slate-200 text-lg tracking-tight shadow-inner"
                 />
               </div>
             </motion.div>
@@ -261,18 +261,18 @@ export default function LoggerWizard({ onComplete }: Props) {
 
           {step === 4 && (
             <motion.div key="step4" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="space-y-12 flex-1 flex flex-col justify-center items-center text-center py-10">
-              <div className="w-24 h-24 bg-white/5 border border-white/10 rounded-[2rem] flex items-center justify-center mb-6 relative group overflow-hidden">
-                <div className="absolute inset-0 bg-blue-600/10 animate-pulse" />
-                <Sparkles className={`w-10 h-10 text-white relative z-10 ${isSummarizing ? 'animate-spin' : 'animate-bounce'}`} />
+              <div className="w-24 h-24 bg-slate-50 border border-slate-200 rounded-[2rem] flex items-center justify-center mb-6 relative group overflow-hidden">
+                <div className="absolute inset-0 bg-blue-500/5 animate-pulse" />
+                <Sparkles className={`w-10 h-10 text-slate-900 relative z-10 ${isSummarizing ? 'animate-spin' : 'animate-bounce'}`} />
               </div>
               <div className="space-y-4">
-                <h4 className="text-3xl font-black text-white tracking-tighter uppercase italic">
+                <h4 className="text-3xl font-black text-slate-900 tracking-tight uppercase">
                   {isSummarizing ? 'Synthesizing...' : 'Audit Ready'}
                 </h4>
-                <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.5em]">Protocol Finalization</p>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.5em]">Protocol Finalization</p>
               </div>
-              <div className="bg-white p-12 rounded-[3rem] border border-white shadow-2xl max-w-2xl w-full relative overflow-hidden group">
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-600/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="bg-white p-12 rounded-[3rem] border border-slate-100 shadow-2xl max-w-2xl w-full relative overflow-hidden group">
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                 <p className="text-slate-900 font-black text-2xl tracking-tight leading-snug italic relative z-10">
                   &quot;{aiSummary || 'Syncing data...'}&quot;
                 </p>
@@ -281,15 +281,15 @@ export default function LoggerWizard({ onComplete }: Props) {
           )}
         </AnimatePresence>
 
-        <div className="mt-16 flex justify-between items-center pt-10 border-t border-white/5">
+        <div className="mt-16 flex justify-between items-center pt-10 border-t border-slate-100">
           {step > 1 && step < 4 ? (
-            <button onClick={() => setStep(step - 1)} className="px-8 py-3 text-slate-500 font-black hover:text-white transition-colors uppercase tracking-[0.3em] text-[10px]">Back</button>
+            <button onClick={() => setStep(step - 1)} className="px-8 py-3 text-slate-400 font-black hover:text-slate-900 transition-colors uppercase tracking-[0.3em] text-[10px]">Back</button>
           ) : <div />}
           
           <button
             onClick={handleNext}
             disabled={(step === 1 && !content.trim()) || isSummarizing || isSyncing || (step === 4 && (!aiSummary || !content.trim()))}
-            className="px-10 py-5 bg-white text-slate-950 rounded-[2rem] shadow-2xl hover:scale-105 active:scale-95 transition-all font-black uppercase tracking-[0.2em] text-[11px] flex items-center gap-4 disabled:opacity-10 disabled:grayscale"
+            className="px-10 py-5 bg-slate-900 text-white rounded-[2rem] shadow-xl hover:bg-black hover:scale-105 active:scale-95 transition-all font-black uppercase tracking-[0.2em] text-[11px] flex items-center gap-4 disabled:opacity-10"
           >
             {step === 4 ? (
               <>

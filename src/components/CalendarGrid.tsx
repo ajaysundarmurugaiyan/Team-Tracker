@@ -37,21 +37,9 @@ export default function CalendarGrid({ logs: managedLogs }: { logs?: WorkLog[] }
     });
 
     const today = new Date();
-    const startOfWeek = new Date(today);
-    startOfWeek.setDate(today.getDate() - today.getDay());
-    const endOfWeek = new Date(today);
-    endOfWeek.setDate(today.getDate() + (6 - today.getDay()));
-
-    const weekLogs = logs.filter(l => {
-      const logDate = new Date(l.date);
-      return logDate >= startOfWeek && logDate <= endOfWeek;
-    });
-
     return {
       monthCount: new Set(monthLogs.map(l => l.date)).size,
       monthTotal: days.length,
-      weekCount: new Set(weekLogs.map(l => l.date)).size,
-      weekTotal: 7,
       completionRate: Math.round((new Set(monthLogs.map(l => l.date)).size / (days.length || 1)) * 100)
     };
   }, [logs, currentDate, mounted]);
@@ -120,11 +108,6 @@ export default function CalendarGrid({ logs: managedLogs }: { logs?: WorkLog[] }
             <div className="text-right flex-1 sm:flex-none">
               <p className="text-[8px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5 sm:mb-1">Monthly Active</p>
               <p className="text-base sm:text-lg font-black text-slate-900">{stats.monthCount}<span className="text-slate-300 text-[10px] sm:text-sm">/{stats.monthTotal}D</span></p>
-            </div>
-            <div className="w-[1px] h-8 sm:h-10 bg-slate-200" />
-            <div className="text-right flex-1 sm:flex-none">
-              <p className="text-[8px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5 sm:mb-1">Weekly Active</p>
-              <p className="text-base sm:text-lg font-black text-slate-900">{stats.weekCount}<span className="text-slate-300 text-[10px] sm:text-sm">/7D</span></p>
             </div>
           </div>
 

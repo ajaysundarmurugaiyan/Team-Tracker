@@ -57,19 +57,7 @@ export default function ProfileCard({ profile: managedProfile, logs: managedLogs
     const lastDayOfYear = new Date(currentYear, 11, 31);
     const totalWorkingDaysInYear = countWorkingDaysInRange(firstDayOfYear, lastDayOfYear);
 
-    const startOfWeek = new Date(now);
-    startOfWeek.setDate(now.getDate() - now.getDay()); 
-    startOfWeek.setHours(0, 0, 0, 0);
-
-    const weeklyLogs = logs.filter(l => {
-      const d = new Date(l.date);
-      return d >= startOfWeek && d <= now;
-    });
-
-    const uniqueWeeklyDays = new Set(weeklyLogs.map(l => l.date)).size;
-
     return {
-      weekly: Math.min(Math.round((uniqueWeeklyDays / 5) * 100), 100),
       monthly: Math.round((uniqueMonthlyDays / totalWorkingDaysInMonth) * 100),
       yearly: Math.round((uniqueYearlyDays / totalWorkingDaysInYear) * 100),
       total: logs.length
@@ -137,17 +125,13 @@ export default function ProfileCard({ profile: managedProfile, logs: managedLogs
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-2 relative z-10">
-          <div className="p-3 bg-white border border-slate-100 rounded-xl shadow-sm space-y-0.5 group hover:border-blue-500/30 transition-all">
-            <p className="text-[7px] font-black text-slate-400 uppercase tracking-widest">Weekly</p>
-            <p className="text-base font-black text-slate-900 tracking-tighter">{stats.weekly}%</p>
-          </div>
+        <div className="grid grid-cols-2 gap-2 relative z-10">
           <div className="p-3 bg-white border border-slate-100 rounded-xl shadow-sm space-y-0.5 group hover:border-emerald-500/30 transition-all">
-            <p className="text-[7px] font-black text-slate-400 uppercase tracking-widest">Monthly</p>
+            <p className="text-[7px] font-black text-slate-400 uppercase tracking-widest">Monthly Sync</p>
             <p className="text-base font-black text-slate-900 tracking-tighter">{stats.monthly}%</p>
           </div>
           <div className="p-3 bg-white border border-slate-100 rounded-xl shadow-sm space-y-0.5 group hover:border-indigo-500/30 transition-all">
-            <p className="text-[7px] font-black text-slate-400 uppercase tracking-widest">Yearly</p>
+            <p className="text-[7px] font-black text-slate-400 uppercase tracking-widest">Yearly Goal</p>
             <p className="text-base font-black text-slate-900 tracking-tighter">{stats.yearly}%</p>
           </div>
         </div>

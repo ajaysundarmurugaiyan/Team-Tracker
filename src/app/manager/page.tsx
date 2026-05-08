@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useProfile } from '@/hooks/useProfile';
 import { useLogs } from '@/hooks/useLogs';
 import { useRouter } from 'next/navigation';
@@ -11,8 +11,11 @@ import {
 } from 'lucide-react';
 import Loader from '@/components/Loader';
 import { formatDate } from '@/lib/dates';
+import { useSearchParams } from 'next/navigation';
+import CalendarGrid from '@/components/CalendarGrid';
+import ProfileCard from '@/components/ProfileCard';
 
-export default function ManagerDashboard() {
+function ManagerDashboard() {
   const { profile, loading: profileLoading, fetchManagerStats, signOut } = useProfile();
   const { fetchLogsForUser } = useLogs();
   const router = useRouter();
@@ -241,5 +244,13 @@ export default function ManagerDashboard() {
         </AnimatePresence>
       </div>
     </div>
+  );
+}
+
+export default function ManagerPage() {
+  return (
+    <Suspense fallback={<Loader label="Executive Oversight" sublabel="Initializing Management Portal" />}>
+      <ManagerDashboard />
+    </Suspense>
   );
 }

@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, Suspense } from 'react';
 import { useProfile } from '@/hooks/useProfile';
 import { useLogs } from '@/hooks/useLogs';
 import { useRouter } from 'next/navigation';
@@ -17,8 +17,8 @@ import CalendarGrid from '@/components/CalendarGrid';
 import ProfileCard from '@/components/ProfileCard';
 import { useSearchParams } from 'next/navigation';
 
-export default function LeadDashboard() {
-  const { profile, loading: profileLoading, fetchAllProfiles, addMemberToLead } = useProfile();
+function LeadDashboard() {
+  const { profile, loading: profileLoading, fetchAllProfiles, addMemberToLead, signOut } = useProfile();
   const { fetchAllMembersLogs, fetchLogsForUser } = useLogs();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -275,5 +275,13 @@ export default function LeadDashboard() {
         </main>
       </div>
     </div>
+  );
+}
+
+export default function LeadPage() {
+  return (
+    <Suspense fallback={<Loader label="Command Center" sublabel="Initializing Lead Portal" />}>
+      <LeadDashboard />
+    </Suspense>
   );
 }

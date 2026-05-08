@@ -51,18 +51,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
           return;
         }
 
-        // Try to get session with a safer timeout
-        const sessionPromise = supabase.auth.getSession();
-        const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Auth Service Timeout')), 20000) 
-        );
-
-        const raceResult = await Promise.race([sessionPromise, timeoutPromise]).catch(err => {
-          console.warn('Auth synchronization delayed:', err.message);
-          return { data: { session: null }, error: null };
-        }) as any;
-        
-        const { data: { session }, error } = raceResult || { data: { session: null }, error: null };
+        const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
           console.error('Session retrieval error:', error);
@@ -74,39 +63,8 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
         if (mounted) {
           setUser(currentUser);
           if (currentUser) {
-            // If user exists, fetch their profile
-            try {
-              const { data: profileData, error: profileError } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('id', currentUser.id)
-                .single();
-
-              if (profileError) {
-                console.warn('Profile sync warning:', profileError.message, profileError.status);
-                if (profileError.code === 'PGRST116' || profileError.status === 406 || profileError.status === 403 || profileError.status === 401) {
-                  // If profile is missing or forbidden, attempt to recover or lazy-create
-                  await fetchProfile(currentUser.id);
-                } else {
-                  setLoading(false);
-                }
-              } else if (profileData) {
-                setProfile({
-                  id: profileData.id,
-                  employeeId: profileData.employee_id || 'UNKNOWN',
-                  name: profileData.full_name || 'Anonymous',
-                  role: profileData.role || 'member',
-                  skills: profileData.skills || [],
-                  totalLogs: 0
-                });
-                setLoading(false);
-              }
-            } catch (err) {
-              console.error('Profile fetch internal error:', err);
-              setLoading(false);
-            }
+            await fetchProfile(currentUser.id);
           } else {
-            // No user, no wait
             setLoading(false);
           }
         }

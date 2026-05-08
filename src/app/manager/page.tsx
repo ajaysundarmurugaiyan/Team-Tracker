@@ -94,7 +94,7 @@ export default function ManagerDashboard() {
 
   if (profileLoading || loading) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+      <div className="min-h-screen bg-[#f8fafc] flex items-center justify-center">
         <Loader label="Executive Suite" sublabel="Synchronizing Network Intelligence" />
       </div>
     );
@@ -204,13 +204,13 @@ export default function ManagerDashboard() {
               <div className="mb-8 flex items-center justify-between">
                  <button 
                   onClick={() => setShowSidebar(true)}
-                  className="md:hidden p-3 bg-white border border-slate-200 rounded-xl text-slate-600"
+                  className="md:hidden p-3 bg-white border border-slate-200 rounded-xl text-slate-600 shadow-sm"
                 >
                   <List className="w-5 h-5" />
                 </button>
                 <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Managed Identity: {selectedUser.full_name}</span>
+                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(59,130,246,0.5)]" />
+                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Managed Identity: {selectedUser.full_name}</span>
                 </div>
               </div>
 
@@ -231,14 +231,15 @@ export default function ManagerDashboard() {
               </div>
             </motion.div>
           ) : (
-            <div className="h-full flex flex-col items-center justify-center text-center space-y-8 opacity-40">
-              <div className="w-24 h-24 bg-white rounded-[2rem] border border-slate-200 flex items-center justify-center shadow-sm">
-                <Briefcase className="w-10 h-10 text-slate-400" />
+            <div className="h-full flex flex-col items-center justify-center text-center space-y-12">
+              <div className="w-32 h-32 bg-white rounded-[3rem] border border-slate-200 flex items-center justify-center shadow-xl shadow-slate-200/50 relative group">
+                <div className="absolute inset-0 bg-blue-500/5 rounded-[3rem] animate-pulse" />
+                <Briefcase className="w-12 h-12 text-slate-400 relative z-10" />
               </div>
-              <div className="space-y-2">
-                <h2 className="text-xl font-black text-slate-900 uppercase tracking-widest">Executive Terminal</h2>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest max-w-xs">
-                  Select a lead or unit asset to initialize full telemetry analysis
+              <div className="space-y-4">
+                <h2 className="text-2xl font-black text-slate-900 uppercase tracking-[0.4em]">Executive Suite</h2>
+                <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.3em] max-w-xs leading-loose">
+                  Select an operational lead to begin unit analysis
                 </p>
               </div>
             </div>

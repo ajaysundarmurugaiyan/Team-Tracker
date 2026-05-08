@@ -108,7 +108,7 @@ export default function LeadDashboard() {
 
   if (profileLoading || loading) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+      <div className="min-h-screen bg-[#f8fafc] flex items-center justify-center">
         <Loader label="Lead Operations" sublabel="Tactical Command Sync" />
       </div>
     );
@@ -238,8 +238,8 @@ export default function LeadDashboard() {
                 className="max-w-7xl mx-auto"
               >
                 <div className="mb-8 flex items-center gap-3">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
-                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Managed Identity: {selectedMember.full_name}</span>
+                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(59,130,246,0.5)]" />
+                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Managed Identity: {selectedMember.full_name}</span>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-stretch">
@@ -259,14 +259,14 @@ export default function LeadDashboard() {
                 </div>
               </motion.div>
             ) : (
-              <div className="h-full flex flex-col items-center justify-center text-center space-y-8 opacity-40">
-                <div className="w-20 h-20 bg-white rounded-3xl border border-slate-200 flex items-center justify-center shadow-sm">
-                  <Users className="w-8 h-8 text-slate-400" />
+              <div className="h-full flex flex-col items-center justify-center text-center space-y-12">
+                <div className="w-28 h-28 bg-white rounded-[2.5rem] border border-slate-200 flex items-center justify-center shadow-xl shadow-slate-200/50">
+                  <Users className="w-10 h-10 text-slate-400" />
                 </div>
-                <div className="space-y-2">
-                  <h2 className="text-xl font-black text-slate-900 uppercase tracking-widest">Tactical Terminal</h2>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest max-w-xs">
-                    Select a unit asset to initialize full telemetry and growth projection
+                <div className="space-y-4">
+                  <h2 className="text-2xl font-black text-slate-900 uppercase tracking-[0.4em]">Tactical Operations</h2>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest max-w-xs leading-loose">
+                    Select a unit asset to initialize telemetry analysis
                   </p>
                 </div>
               </div>

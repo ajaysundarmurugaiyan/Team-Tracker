@@ -14,16 +14,26 @@ import { formatDate } from '@/lib/dates';
 
 export default function ManagerDashboard() {
   const { profile, loading: profileLoading, fetchManagerStats, signOut } = useProfile();
+import CalendarGrid from '@/components/CalendarGrid';
+import ProfileCard from '@/components/ProfileCard';
+import { useSearchParams } from 'next/navigation';
+
+export default function ManagerDashboard() {
+  const { profile, loading: profileLoading, fetchManagerStats, signOut } = useProfile();
   const { fetchLogsForUser } = useLogs();
   const router = useRouter();
+  const searchParams = useSearchParams();
   
   const [data, setData] = useState<{ leads: any[], members: any[] } | null>(null);
   const [loading, setLoading] = useState(true);
+  
+  const initialLeadId = searchParams.get('leadId');
+  const initialMemberId = searchParams.get('memberId');
+  
   const [selectedLead, setSelectedLead] = useState<any | null>(null);
   const [selectedUser, setSelectedUser] = useState<any | null>(null);
   const [userLogs, setUserLogs] = useState<any[]>([]);
   const [logsLoading, setLogsLoading] = useState(false);
-
   const [showSidebar, setShowSidebar] = useState(true);
 
   useEffect(() => {
@@ -38,15 +48,48 @@ export default function ManagerDashboard() {
     setLoading(true);
     const stats = await fetchManagerStats();
     setData(stats);
+    
+    // Restore selection from URL
+    if (stats) {
+      if (initialLeadId) {
+        const lead = stats.leads.find((l: any) => l.id === initialLeadId);
+        if (lead) setSelectedLead(lead);
+      }
+      if (initialMemberId) {
+        const member = stats.members.find((m: any) => m.id === initialMemberId) || 
+                       stats.leads.find((l: any) => l.id === initialMemberId);
+        if (member) handleUserSelect(member, false);
+      }
+    }
     setLoading(false);
   };
 
-  const handleUserSelect = async (user: any) => {
+  const handleUserSelect = async (user: any, updateUrl = true) => {
     setSelectedUser(user);
     setLogsLoading(true);
+    
+    if (updateUrl) {
+      const params = new URLSearchParams(window.location.search);
+      params.set('memberId', user.id);
+      if (selectedLead) params.set('leadId', selectedLead.id);
+      router.replace(`${window.location.pathname}?${params.toString()}`);
+    }
+
     const logs = await fetchLogsForUser(user.id);
     setUserLogs(logs);
     setLogsLoading(false);
+  };
+
+  const selectLead = (lead: any) => {
+    setSelectedLead(lead);
+    setSelectedUser(null);
+    setUserLogs([]);
+    
+    const params = new URLSearchParams();
+    params.set('leadId', lead.id);
+    router.replace(`${window.location.pathname}?${params.toString()}`);
+    
+    if (window.innerWidth < 768) setShowSidebar(false);
   };
 
   if (profileLoading || loading) {
@@ -62,226 +105,140 @@ export default function ManagerDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-[#020617] text-slate-300 flex flex-col md:flex-row font-outfit overflow-hidden">
-      {/* Executive Sidebar: Recycler View for Leads */}
-      <div className={`w-full md:w-96 bg-slate-900/10 border-r border-white/5 backdrop-blur-3xl flex flex-col h-screen z-30 transition-all duration-500 relative ${!showSidebar && '-translate-x-full md:translate-x-0'}`}>
-        <div className="absolute inset-0 bg-gradient-to-b from-blue-600/5 to-transparent pointer-events-none" />
-        <div className="p-10 border-b border-white/5 space-y-10 relative z-10">
-          <div className="flex items-center gap-6">
-            <div className="w-16 h-16 bg-white rounded-3xl flex items-center justify-center shadow-[0_20px_40px_rgba(255,255,255,0.1)] group">
-              <Globe className="w-8 h-8 text-slate-950 group-hover:rotate-180 transition-transform duration-1000" />
+    <div className="min-h-screen bg-[#f8fafc] text-slate-900 flex flex-col md:flex-row font-outfit overflow-hidden">
+      {/* Executive Sidebar */}
+      <div className={`w-full md:w-80 bg-white border-r border-slate-200 flex flex-col h-screen z-30 transition-all duration-500 relative ${!showSidebar && '-translate-x-full md:translate-x-0'}`}>
+        <div className="p-8 border-b border-slate-100 space-y-6">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-slate-900 rounded-2xl flex items-center justify-center shadow-xl">
+              <Globe className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-black text-white uppercase tracking-[0.3em] italic">Oversight</h1>
-              <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.5em] opacity-50">Global Executive</p>
+              <h1 className="text-lg font-black text-slate-900 uppercase tracking-tight">Oversight</h1>
+              <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Executive Portal</p>
             </div>
           </div>
           <button 
             onClick={signOut}
-            className="w-full py-5 px-6 bg-white/5 border border-white/5 rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 hover:text-white hover:bg-red-500/10 hover:border-red-500/20 transition-all flex items-center justify-between group shadow-2xl"
+            className="w-full py-3 px-4 bg-slate-50 border border-slate-200 rounded-xl text-[9px] font-black uppercase tracking-widest text-slate-500 hover:text-red-600 hover:bg-red-50 transition-all flex items-center justify-between group"
           >
             <span>Terminate Session</span>
-            <Zap className="w-4 h-4 group-hover:scale-125 transition-transform" />
+            <Zap className="w-3.5 h-3.5" />
           </button>
         </div>
 
-        <div className={`flex-1 overflow-y-auto p-6 space-y-6 scrollbar-thin scrollbar-thumb-white/5 relative z-10 ${!showSidebar && 'hidden md:block'}`}>
-          <h2 className="px-4 text-[10px] font-black text-slate-600 uppercase tracking-[0.4em]">Tier-1 Operational Leads</h2>
-          <div className="space-y-2">
+        <div className="flex-1 overflow-y-auto p-4 space-y-6 scrollbar-thin scrollbar-thumb-slate-200">
+          <h2 className="px-4 text-[9px] font-black text-slate-400 uppercase tracking-[0.3em]">Operational Leads</h2>
+          <div className="space-y-1">
             {data?.leads.map(lead => (
               <button
                 key={lead.id}
-                onClick={() => {
-                  setSelectedLead(lead);
-                  setSelectedUser(null);
-                  setUserLogs([]);
-                  if (window.innerWidth < 768) setShowSidebar(false);
-                }}
-                className={`w-full p-6 rounded-[2rem] transition-all text-left flex items-center justify-between group relative overflow-hidden ${
+                onClick={() => selectLead(lead)}
+                className={`w-full p-4 rounded-xl transition-all text-left flex items-center justify-between group ${
                   selectedLead?.id === lead.id 
-                  ? 'bg-white text-slate-950 shadow-[0_20px_50px_rgba(255,255,255,0.1)] scale-[1.02]' 
-                  : 'hover:bg-white/5 text-slate-400'
+                  ? 'bg-slate-900 text-white shadow-lg shadow-slate-900/20' 
+                  : 'hover:bg-slate-50 text-slate-600'
                 }`}
               >
-                <div className="relative z-10">
-                  <p className="text-xs font-black uppercase tracking-tight">{lead.full_name}</p>
-                  <p className={`text-[9px] font-black uppercase tracking-[0.2em] mt-1 ${selectedLead?.id === lead.id ? 'text-slate-500' : 'text-slate-600'}`}>
-                    {membersUnderLead(lead.id).length} Active Assets
+                <div className="min-w-0">
+                  <p className="text-[11px] font-black uppercase tracking-tight truncate">{lead.full_name}</p>
+                  <p className={`text-[8px] font-black uppercase tracking-widest mt-0.5 ${selectedLead?.id === lead.id ? 'text-slate-400' : 'text-slate-400'}`}>
+                    {membersUnderLead(lead.id).length} Assets
                   </p>
                 </div>
-                <ChevronRight className={`w-5 h-5 relative z-10 transition-transform group-hover:translate-x-1 ${selectedLead?.id === lead.id ? 'opacity-100' : 'opacity-0'}`} />
+                <ChevronRight className={`w-4 h-4 ${selectedLead?.id === lead.id ? 'opacity-100' : 'opacity-20'}`} />
               </button>
             ))}
           </div>
-        </div>
 
-        <div className="p-8 bg-white/5 border-t border-white/5 relative z-10">
-          <div className="flex items-center gap-4">
-            <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.8)]" />
-            <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em]">Network Secure</span>
-          </div>
+          {selectedLead && (
+            <>
+              <div className="h-[1px] bg-slate-100 mx-4 my-2" />
+              <h2 className="px-4 text-[9px] font-black text-slate-400 uppercase tracking-[0.3em]">Unit Assets</h2>
+              <div className="space-y-1">
+                <button
+                  onClick={() => handleUserSelect(selectedLead)}
+                  className={`w-full p-4 rounded-xl transition-all text-left flex items-center gap-4 ${
+                    selectedUser?.id === selectedLead.id 
+                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' 
+                    : 'hover:bg-slate-50 text-slate-600'
+                  }`}
+                >
+                   <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-black text-[10px] ${selectedUser?.id === selectedLead.id ? 'bg-white/20' : 'bg-slate-100'}`}>
+                    L
+                  </div>
+                  <span className="text-[11px] font-black uppercase tracking-tight truncate">{selectedLead.full_name} (Lead)</span>
+                </button>
+                {membersUnderLead(selectedLead.id).map(member => (
+                  <button
+                    key={member.id}
+                    onClick={() => handleUserSelect(member)}
+                    className={`w-full p-4 rounded-xl transition-all text-left flex items-center gap-4 ${
+                      selectedUser?.id === member.id 
+                      ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' 
+                      : 'hover:bg-slate-50 text-slate-600'
+                    }`}
+                  >
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-black text-[10px] ${selectedUser?.id === member.id ? 'bg-white/20' : 'bg-slate-100'}`}>
+                      {member.full_name?.[0] || '?'}
+                    </div>
+                    <span className="text-[11px] font-black uppercase tracking-tight truncate">{member.full_name}</span>
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
         </div>
       </div>
 
-      {/* Primary Intelligence Field */}
-      <div className="flex-1 h-screen overflow-y-auto bg-slate-950 p-6 md:p-16 scrollbar-thin scrollbar-thumb-slate-900">
+      {/* Main Intelligence Field */}
+      <div className="flex-1 h-screen overflow-y-auto bg-[#f8fafc] p-4 md:p-8 lg:p-12 scrollbar-thin scrollbar-thumb-slate-200">
         <AnimatePresence mode="wait">
-          {selectedLead ? (
+          {selectedUser ? (
             <motion.div
-              key={selectedLead.id}
-              initial={{ opacity: 0, y: 15 }}
+              key={selectedUser.id}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="max-w-5xl mx-auto space-y-16"
+              className="max-w-7xl mx-auto"
             >
-              {/* Executive Unit Header */}
-              <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-12 border-b border-white/5 pb-16">
-                <div className="space-y-6">
-                  <div className="flex items-center gap-6">
-                    <button 
-                      onClick={() => setShowSidebar(true)}
-                      className="md:hidden w-12 h-12 bg-white/5 rounded-2xl border border-white/10 flex items-center justify-center hover:bg-white/10 transition-all shadow-2xl"
-                    >
-                      <List className="w-5 h-5 text-white" />
-                    </button>
-                    <span className="px-4 py-1.5 bg-white/5 text-white text-[10px] font-black uppercase tracking-[0.4em] rounded-xl border border-white/10 shadow-inner">Operational Unit</span>
-                    <h2 className="text-5xl md:text-7xl font-black text-white tracking-tighter uppercase italic">{selectedLead.full_name}</h2>
-                  </div>
-                  <p className="text-[11px] font-black text-slate-500 uppercase tracking-[0.5em] opacity-60">Performing Tier-2 unit deep-dive and audit analysis</p>
-                </div>
-                
-                <button 
-                  onClick={() => handleUserSelect(selectedLead)}
-                  className={`w-full md:w-auto px-10 py-6 rounded-[2.5rem] font-black uppercase text-[11px] tracking-[0.3em] transition-all flex items-center justify-center md:justify-start gap-6 shadow-[0_20px_40px_rgba(0,0,0,0.3)] border hover:scale-105 active:scale-95 ${
-                    selectedUser?.id === selectedLead.id 
-                    ? 'bg-white text-slate-950 border-white' 
-                    : 'bg-white/5 text-white border-white/10 hover:bg-white/10'
-                  }`}
+              <div className="mb-8 flex items-center justify-between">
+                 <button 
+                  onClick={() => setShowSidebar(true)}
+                  className="md:hidden p-3 bg-white border border-slate-200 rounded-xl text-slate-600"
                 >
-                  <BarChart className="w-5 h-5" />
-                  Audit Lead Metrics
+                  <List className="w-5 h-5" />
                 </button>
+                <div className="flex items-center gap-3">
+                  <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Managed Identity: {selectedUser.full_name}</span>
+                </div>
               </div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
-                {/* Unit Asset Roster (Recycler View) */}
-                <div className="lg:col-span-4 space-y-8">
-                  <h3 className="text-[9px] font-black text-slate-600 uppercase tracking-[0.3em]">Unit Assets</h3>
-                  <div className="space-y-2 max-h-[500px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-slate-900">
-                    {membersUnderLead(selectedLead.id).map(member => (
-                      <button
-                        key={member.id}
-                        onClick={() => handleUserSelect(member)}
-                        className={`w-full p-6 rounded-[2rem] transition-all text-left flex items-center gap-6 group relative overflow-hidden ${
-                          selectedUser?.id === member.id 
-                          ? 'bg-white text-slate-950 shadow-[0_20px_40px_rgba(255,255,255,0.1)] scale-[1.02]' 
-                          : 'bg-white/5 border border-white/5 hover:bg-white/10'
-                        }`}
-                      >
-                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black text-xs ${
-                          selectedUser?.id === member.id ? 'bg-slate-950 text-white' : 'bg-slate-900 text-slate-500'
-                        }`}>
-                          {member.full_name?.[0] || '?'}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs font-black uppercase tracking-tight">{member.full_name}</p>
-                          <p className={`text-[9px] font-black uppercase tracking-[0.2em] mt-1 ${selectedUser?.id === member.id ? 'text-slate-500' : 'text-slate-600'}`}>
-                            ID: {member.employee_id}
-                          </p>
-                        </div>
-                      </button>
-                    ))}
-                    {membersUnderLead(selectedLead.id).length === 0 && (
-                      <div className="py-20 text-center border border-dashed border-slate-800 rounded-[3rem] opacity-20">
-                        <User className="w-8 h-8 mx-auto mb-4" />
-                        <p className="text-[9px] font-black uppercase tracking-widest">No Registered Assets</p>
-                      </div>
-                    )}
-                  </div>
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+                <div className="lg:col-span-8 h-full">
+                  <CalendarGrid logs={userLogs} />
                 </div>
-
-                {/* Secure Audit Feed (Recycler View) */}
-                <div className="lg:col-span-8 space-y-8">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-[9px] font-black text-slate-600 uppercase tracking-[0.3em]">
-                      {selectedUser ? `${selectedUser.full_name} Data Feed` : 'Awaiting Selection'}
-                    </h3>
-                    {selectedUser && (
-                      <span className="px-3 py-1 bg-white/5 text-white text-[8px] font-black uppercase tracking-[0.2em] rounded-md border border-white/5">
-                        {userLogs.length} Records Verified
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="space-y-6 max-h-[700px] overflow-y-auto pr-4 scrollbar-thin scrollbar-thumb-slate-900">
-                    {logsLoading ? (
-                      <div className="py-32 flex flex-col items-center justify-center gap-6">
-                        <div className="w-12 h-12 border-2 border-white/10 border-t-white animate-spin rounded-full" />
-                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">Querying Global Matrix...</p>
-                      </div>
-                    ) : selectedUser ? (
-                      userLogs.map(log => (
-                        <motion.div 
-                          initial={{ opacity: 0, x: 10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          key={log.id} 
-                          className="bg-white/5 p-10 rounded-[3rem] border border-white/5 backdrop-blur-3xl space-y-10 hover:bg-white/10 transition-all group relative overflow-hidden"
-                        >
-                          <div className="absolute inset-0 bg-gradient-to-br from-blue-600/5 to-transparent pointer-events-none" />
-                          <div className="flex items-center justify-between border-b border-white/5 pb-8 relative z-10">
-                            <div className="flex items-center gap-5">
-                              <Calendar className="w-5 h-5 text-slate-500" />
-                              <span className="text-xs font-black text-white uppercase tracking-[0.2em]">{formatDate(log.date)}</span>
-                            </div>
-                            <div className="flex items-center gap-5 text-slate-500">
-                              <Clock className="w-5 h-5" />
-                              <span className="text-[10px] font-black uppercase tracking-[0.3em]">
-                                {log.createdAt && !isNaN(log.createdAt) ? new Date(log.createdAt).toLocaleTimeString() : 'N/A'}
-                              </span>
-                            </div>
-                          </div>
-                          
-                          <div className="space-y-8 relative z-10">
-                            <p className="text-sm font-black text-slate-300 leading-relaxed italic border-l-4 border-blue-500/30 pl-8 group-hover:border-blue-500 transition-colors">
-                              &quot;{log.content}&quot;
-                            </p>
-                            
-                            <div className="flex flex-wrap gap-2 pt-2">
-                              {log.skills.map((skill: string) => (
-                                <span key={skill} className="px-3 py-1.5 bg-slate-950 border border-white/5 text-white text-[9px] font-black uppercase tracking-wider rounded-lg">
-                                  {skill}
-                                </span>
-                              ))}
-                            </div>
-                          </div>
-                        </motion.div>
-                      ))
-                    ) : (
-                      <div className="py-48 text-center space-y-8 bg-white/5 rounded-[4rem] border border-white/5 border-dashed">
-                        <Activity className="w-16 h-16 text-slate-800 mx-auto" />
-                        <p className="text-[11px] font-black text-slate-600 uppercase tracking-[0.4em]">Select a Lead or Asset to View Data</p>
-                      </div>
-                    )}
-                    
-                    {selectedUser && userLogs.length === 0 && !logsLoading && (
-                      <div className="py-32 text-center space-y-4 opacity-20">
-                        <ShieldAlert className="w-12 h-12 mx-auto" />
-                        <p className="text-[10px] font-black uppercase tracking-[0.2em]">Zero Records Found in Global Registry</p>
-                      </div>
-                    )}
-                  </div>
+                
+                <div className="lg:col-span-4 sticky top-0">
+                  <ProfileCard profile={{
+                    id: selectedUser.id,
+                    name: selectedUser.full_name,
+                    role: selectedUser.role,
+                    employeeId: selectedUser.employee_id,
+                    skills: selectedUser.skills || []
+                  }} logs={userLogs} />
                 </div>
               </div>
             </motion.div>
           ) : (
-            <div className="h-full flex flex-col items-center justify-center text-center space-y-10 opacity-20">
-              <div className="w-40 h-40 bg-white/5 rounded-[4rem] border border-white/5 flex items-center justify-center relative overflow-hidden group">
-                <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/10 to-indigo-500/10 animate-pulse" />
-                <Briefcase className="w-16 h-16 text-white relative z-10" />
+            <div className="h-full flex flex-col items-center justify-center text-center space-y-8 opacity-40">
+              <div className="w-24 h-24 bg-white rounded-[2rem] border border-slate-200 flex items-center justify-center shadow-sm">
+                <Briefcase className="w-10 h-10 text-slate-400" />
               </div>
-              <div className="space-y-4">
-                <h2 className="text-3xl font-black text-white uppercase tracking-[0.5em]">Executive System Ready</h2>
-                <p className="text-[11px] font-black text-slate-500 uppercase tracking-[0.3em] max-w-sm leading-loose">
-                  Select an operational lead to begin high-fidelity unit intelligence analysis
+              <div className="space-y-2">
+                <h2 className="text-xl font-black text-slate-900 uppercase tracking-widest">Executive Terminal</h2>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest max-w-xs">
+                  Select a lead or unit asset to initialize full telemetry analysis
                 </p>
               </div>
             </div>
@@ -289,5 +246,7 @@ export default function ManagerDashboard() {
         </AnimatePresence>
       </div>
     </div>
+  );
+}
   );
 }

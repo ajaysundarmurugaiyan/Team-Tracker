@@ -5,9 +5,12 @@ import { motion } from 'framer-motion';
 import { Award, Target, Code, Brain, Sparkles, TrendingUp } from 'lucide-react';
 import { useMemo, useState, useEffect } from 'react';
 
-export default function ProfileCard() {
-  const { profile } = useProfile();
-  const { logs } = useLogs();
+export default function ProfileCard({ profile: managedProfile, logs: managedLogs }: { profile?: any, logs?: any[] }) {
+  const { profile: contextProfile } = useProfile();
+  const { logs: contextLogs } = useLogs();
+  
+  const profile = managedProfile || contextProfile;
+  const logs = managedLogs || contextLogs;
   const [growthIntel, setGrowthIntel] = useState<string>('Analyzing your trajectory...');
   const [isLoadingIntel, setIsLoadingIntel] = useState(false);
 

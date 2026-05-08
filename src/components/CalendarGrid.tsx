@@ -8,8 +8,13 @@ import { WorkLog } from '@/types/log';
 import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Activity, Target } from 'lucide-react';
 
-export default function CalendarGrid() {
-  const { getLogsByDate, logs } = useLogs();
+export default function CalendarGrid({ logs: managedLogs }: { logs?: WorkLog[] }) {
+  const { getLogsByDate: contextGetLogsByDate, logs: contextLogs } = useLogs();
+  
+  const logs = managedLogs || contextLogs;
+  const getLogsByDate = (date: string) => 
+    managedLogs ? managedLogs.filter(l => l.date === date) : contextGetLogsByDate(date);
+
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [currentDate, setCurrentDate] = useState<Date | null>(null);
   const [mounted, setMounted] = useState(false);

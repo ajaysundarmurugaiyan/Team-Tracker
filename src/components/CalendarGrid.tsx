@@ -105,10 +105,7 @@ export default function CalendarGrid({ logs: managedLogs }: { logs?: WorkLog[] }
 
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 sm:gap-6">
           <div className="flex items-center justify-between sm:justify-start gap-4 sm:gap-6">
-            <div className="text-right flex-1 sm:flex-none">
-              <p className="text-[8px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5 sm:mb-1">Monthly Active</p>
-              <p className="text-base sm:text-lg font-black text-slate-900">{stats.monthCount}<span className="text-slate-300 text-[10px] sm:text-sm">/{stats.monthTotal}D</span></p>
-            </div>
+            {/* Redundant telemetry removed - integrated into ProfileCard */}
           </div>
 
           <div className="flex items-center gap-2 bg-white p-1 rounded-xl border border-slate-200 shadow-sm w-full sm:w-auto">

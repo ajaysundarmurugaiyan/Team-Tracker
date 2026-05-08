@@ -144,7 +144,7 @@ export default function CalendarGrid({ logs: managedLogs }: { logs?: WorkLog[] }
         ))}
       </div>
 
-      <div className="flex-1 grid grid-cols-7 auto-rows-fr gap-[1px] bg-slate-100 border-b border-slate-100">
+      <div className="flex-1 grid grid-cols-7 auto-rows-fr lg:min-h-[500px] gap-[1px] bg-slate-100 border-b border-slate-100">
         {emptySlots.map((_, i) => (
           <div key={`empty-${i}`} className="bg-slate-50/50 h-full" />
         ))}

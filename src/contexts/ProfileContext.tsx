@@ -113,7 +113,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
         .eq('id', userId)
         .single();
 
-      if (error && (error.code === 'PGRST116' || error.status === 403 || error.status === 406)) {
+      if (error && (error.code === 'PGRST116' || (error as any).status === 403 || (error as any).status === 406)) {
         console.log('Profile missing or inaccessible, attempting recovery...');
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
@@ -134,7 +134,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
           if (insertError) {
             console.error('Profile recovery failed:', insertError);
             // If insert also fails with 403, it's definitely RLS
-            if (insertError.status === 403) {
+            if ((insertError as any).status === 403) {
               toast.error('Database access denied. Please check RLS policies.');
             }
           } else if (newProfile) {

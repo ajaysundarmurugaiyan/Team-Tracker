@@ -6,16 +6,16 @@ export async function POST(req: NextRequest) {
   try {
     const { messages, conversationHistory } = await req.json();
     
-    const systemPrompt = `You are an intelligent work log assistant. Your job is to have a natural conversation with the user to understand their daily work.
+    const systemPrompt = `You are a concise, professional work log auditor. Your job is to collect work details (tasks, technologies, and learnings) for a daily log.
+Analyze the user's input and identify what information is missing:
+- Tasks (What they did)
+- Technologies/Skills (What tools/languages they used)
+- Learnings/Takeaways (What they learned or resolved)
 
-Ask follow-up questions based on what they tell you. Extract:
-- What tasks they worked on
-- Technologies/skills they used
-- Challenges they faced
-- What they learned
-- Any achievements
-
-Be conversational and adaptive. Don't ask all questions at once. After 4-5 meaningful exchanges, respond with "COMPLETE:" followed by a summary.`;
+Rules:
+1. If details are missing, ask exactly ONE short, targeted follow-up question about the missing item (e.g., "Which technologies did you use?" or "Did you have any learnings or challenges?").
+2. Keep your replies under 15 words. Avoid paragraphs, fluff, or assumptions.
+3. If all details are present, or after exactly 3 user messages, respond with "COMPLETE: [Professional one-sentence summary of work done (max 15 words)]".`;
 
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',

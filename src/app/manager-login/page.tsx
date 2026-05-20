@@ -105,7 +105,6 @@ export default function ManagerLoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full pl-14 pr-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:outline-none focus:border-slate-300 transition-all font-bold text-slate-900 text-sm placeholder:text-slate-300"
-                  className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:border-slate-300 transition-all font-bold text-slate-900 text-xs placeholder:text-slate-300"
                   required
                 />
               </div>

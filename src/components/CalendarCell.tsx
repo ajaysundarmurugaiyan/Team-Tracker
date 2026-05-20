@@ -13,12 +13,34 @@ export default function CalendarCell({ date, logs, onClick }: Props) {
   const day = date.getDate();
   const logCount = logs.length;
 
-  const getLogIntensity = (log: WorkLog) => {
-    const score = log.skills.length + (log.content.length / 50);
-    if (score > 15) return 'bg-emerald-700';
-    if (score > 10) return 'bg-emerald-600';
-    if (score > 5) return 'bg-emerald-500';
-    return 'bg-emerald-400';
+  // Sort logs chronologically to assign progressive intensity shades
+  const sortedLogs = [...logs].sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+
+  const getLogIntensity = (index: number) => {
+    const shades = [
+      'bg-emerald-200', // Lightest green shade for the first log
+      'bg-emerald-300',
+      'bg-emerald-450', // Tailwind doesn't have 450, so use bg-emerald-400
+      'bg-emerald-400',
+      'bg-emerald-500',
+      'bg-emerald-600',
+      'bg-emerald-750', // Use bg-emerald-700
+      'bg-emerald-700',
+      'bg-emerald-800'  // Darkest shade for subsequent logs
+    ];
+    // Filter out invalid classes likebg-emerald-450 and bg-emerald-750
+    const validShades = [
+      'bg-emerald-200',
+      'bg-emerald-300',
+      'bg-emerald-450',
+      'bg-emerald-400',
+      'bg-emerald-500',
+      'bg-emerald-600',
+      'bg-emerald-700',
+      'bg-emerald-800'
+    ].filter(s => s !== 'bg-emerald-450' && s !== 'bg-emerald-750');
+    
+    return validShades[Math.min(index, validShades.length - 1)];
   };
 
   return (
@@ -45,10 +67,10 @@ export default function CalendarCell({ date, logs, onClick }: Props) {
           {logCount === 0 ? (
             <div className="flex-1 h-full bg-slate-100" />
           ) : (
-            logs.map((log, i) => (
+            sortedLogs.map((log, i) => (
               <div 
                 key={log.id} 
-                className={`h-full flex-1 ${getLogIntensity(log)} transition-all duration-500`}
+                className={`h-full flex-1 ${getLogIntensity(i)} transition-all duration-500`}
                 title={`${log.date} Audit`}
               />
             ))

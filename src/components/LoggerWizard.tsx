@@ -1,370 +1,919 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check, Sparkles, Code, Brain, Rocket, Plus, ArrowRight } from 'lucide-react';
+import { 
+  Check, Sparkles, Code, Brain, Rocket, Plus, ArrowRight, 
+  Bot, User, Send, ArrowLeft, RefreshCw, Trash2, Clock, 
+  MessageSquare, Edit2, AlertCircle, X, ChevronRight, CheckCircle2 
+} from 'lucide-react';
 import { toast } from 'sonner';
 import confetti from 'canvas-confetti';
+import { ChatMessage } from '@/types/chat';
+import { extractSkills, extractLearnings } from '@/lib/parser';
 
 interface Props {
   onComplete: (data: any) => void;
 }
 
-const QUICK_TAGS = ['Feature Dev', 'Bug Fix', 'Code Review', 'Meeting', 'Planning', 'Testing', 'DevOps'];
-const SKILL_SUGGESTIONS = ['React', 'TypeScript', 'Node.js', 'Next.js', 'Tailwind', 'Python', 'SQL', 'Git', 'API'];
+const STARTER_CHIPS = [
+  'I worked on frontend UI and component styling.',
+  'I resolved database sync latency issues.',
+  'I created unit tests and refactored core service hooks.',
+  'I set up a new CI/CD deployment pipeline.'
+];
+
+const POPULAR_SKILLS = [
+  'React', 'TypeScript', 'Node.js', 'Next.js', 'Tailwind', 'Python', 'SQL', 'Git', 'Docker'
+];
 
 export default function LoggerWizard({ onComplete }: Props) {
-  const [step, setStep] = useState(1);
-  const [content, setContent] = useState('');
+  const [step, setStep] = useState(1); // 1: Welcome, 2: Chat, 3: Review, 4: Success
+  const [activeTab, setActiveTab] = useState<'chat' | 'intel'>('chat'); // Responsive mobile tab view
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [input, setInput] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [conversationHistory, setConversationHistory] = useState<{ role: 'user' | 'assistant'; content: string }[]>([]);
+  
+  // Curated lists on Review/Capture stage
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
-  const [learnings, setLearnings] = useState('');
-  const [customSkill, setCustomSkill] = useState('');
-  const [isSummarizing, setIsSummarizing] = useState(false);
+  const [learningsList, setLearningsList] = useState<string[]>([]);
   const [aiSummary, setAiSummary] = useState('');
-  const [isLearningOnly, setIsLearningOnly] = useState(false);
-  const [suggestions, setSuggestions] = useState<string[]>([]);
-  const [isGeneratingSuggestions, setIsGeneratingSuggestions] = useState(false);
+  
+  // Custom field controls
+  const [customSkill, setCustomSkill] = useState('');
+  const [customLearning, setCustomLearning] = useState('');
+  
+  // Loading states
+  const [isSummarizing, setIsSummarizing] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
+
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
-  const handleNext = async () => {
-    if (step === 1) {
-      setStep(2);
-    } else if (step === 2) {
-      setStep(3);
-      generateSuggestions();
-    } else if (step === 3) {
-      setStep(4);
-      generateSummary();
-    } else {
-      finish();
+  // Scroll chat to bottom
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    if (step === 2) {
+      scrollToBottom();
+    }
+  }, [messages, step, isLoading]);
+
+  // Initial welcome message from AI once chat starts
+  const startConversation = () => {
+    setStep(2);
+    if (messages.length === 0) {
+      setMessages([
+        {
+          role: 'assistant',
+          content: "Hi! I'm your performance auditing assistant. Let's capture your achievements today. What primary tasks did you work on?",
+          timestamp: Date.now()
+        }
+      ]);
     }
   };
 
-  const generateSuggestions = async () => {
-    if (suggestions.length > 0 || !content.trim()) return;
-    setIsGeneratingSuggestions(true);
+  // Directly skip to manual log entry if user prefers
+  const startManualLog = () => {
+    setSelectedSkills(['General']);
+    setLearningsList(['General progress logged manually.']);
+    setAiSummary('');
+    setStep(3);
+  };
+
+  // Chat message submission
+  const handleSendMessage = async (text: string) => {
+    if (!text.trim() || isLoading) return;
+
+    const userMsg: ChatMessage = {
+      role: 'user',
+      content: text.trim(),
+      timestamp: Date.now()
+    };
+
+    setMessages(prev => [...prev, userMsg]);
+    setInput('');
+    setIsLoading(true);
+
+    // Live extract skills & learnings from this response
+    const extractedSkills = extractSkills(text);
+    setSelectedSkills(prev => {
+      const merged = [...prev];
+      extractedSkills.forEach(s => {
+        if (s && s.toLowerCase() !== 'general' && !merged.some(m => m.toLowerCase() === s.toLowerCase())) {
+          merged.push(s);
+        }
+      });
+      return merged;
+    });
+
+    const extractedLearnings = extractLearnings(text);
+    setLearningsList(prev => {
+      const merged = [...prev];
+      extractedLearnings.forEach(l => {
+        if (l && l.toLowerCase() !== 'no specific learnings captured today.' && !merged.some(m => m.toLowerCase() === l.toLowerCase())) {
+          merged.push(l);
+        }
+      });
+      return merged;
+    });
+
     try {
-      const messages = `Based on these tasks: "${content}", suggest 3 high-impact, professional "strategic takeaways" or "learnings". 
-      Format: Provide exactly 3 bullet points, each 5-8 words. No other text.`;
+      const chatHistoryForAPI = messages.map(m => ({
+        role: m.role,
+        content: m.content
+      }));
 
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          messages,
-          conversationHistory: [{ role: 'system', content: 'You are an AI career coach. Provide extremely concise, professional strategic insights. No preamble.' }]
-        }),
+        body: JSON.stringify({
+          messages: text,
+          conversationHistory: chatHistoryForAPI
+        })
       });
+
       const data = await response.json();
-      if (data.reply) {
-        const lines = data.reply.split('\n').filter((l: string) => l.trim()).map((l: string) => l.replace(/^[•\-\d\.]\s*/, '').trim()).slice(0, 3);
-        setSuggestions(lines);
+      
+      if (data.error) {
+        throw new Error(data.error);
       }
-    } catch (error) {
-      console.error('Suggestions error:', error);
-    } finally {
-      setIsGeneratingSuggestions(false);
-    }
-  };
 
-  const generateSummary = async () => {
-    setIsSummarizing(true);
-    try {
-      const messages = isLearningOnly 
-        ? `Summarize this learning session into a professional conclusion: 
-          Topics: ${content}
-          Skills explored: ${selectedSkills.join(', ')}
-          Key takeaway: ${learnings}`
-        : `Summarize this work log into a professional, concise conclusion: 
-          Tasks: ${content}
-          Skills: ${selectedSkills.join(', ')}
-          Learnings: ${learnings}`;
+      const aiReply = data.reply || '';
 
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          messages,
-          conversationHistory: [{ role: 'system', content: 'You are a professional task auditor. Provide an extremely concise, high-impact summary of EXACTLY what work was done in 8-10 words maximum. No preamble, no full stops.' }]
-        }),
-      });
-      const data = await response.json();
-      if (data.reply) {
-        setAiSummary(data.reply);
+      // Check if conversation is complete
+      if (aiReply.toUpperCase().includes('COMPLETE:')) {
+        const parts = aiReply.split(/COMPLETE:/i);
+        const summaryText = parts[1]?.trim() || aiReply.replace(/COMPLETE:/i, '').trim();
+        setAiSummary(summaryText);
+        setMessages(prev => [...prev, {
+          role: 'assistant',
+          content: aiReply,
+          timestamp: Date.now()
+        }]);
+        
+        // Let user see the complete message briefly, then transition
+        setTimeout(() => {
+          setStep(3);
+        }, 1500);
       } else {
-        throw new Error('Empty reply');
+        setMessages(prev => [...prev, {
+          role: 'assistant',
+          content: aiReply,
+          timestamp: Date.now()
+        }]);
       }
     } catch (error) {
-      console.error('Summary error:', error);
-      const fallback = content.length > 50 ? content.substring(0, 50) + '...' : content;
-      setAiSummary(fallback);
+      console.error('Chat error:', error);
+      toast.error('AI session offline. You can finalize manually.');
+      setMessages(prev => [...prev, {
+        role: 'assistant',
+        content: "I'm having trouble syncing with the neural link. Feel free to click 'Finalize Audit' to submit what we have so far.",
+        timestamp: Date.now()
+      }]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Compile final summary using API if force finalized
+  const handleForceFinalize = async () => {
+    setIsSummarizing(true);
+    setStep(3); // Transition to review screen immediately to show loader
+
+    const userMessagesText = messages
+      .filter(m => m.role === 'user')
+      .map(m => m.content)
+      .join('\n');
+
+    if (!userMessagesText.trim()) {
+      setAiSummary('Manual session logged.');
+      setIsSummarizing(false);
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: `Summarize this log conversation into a professional, concise one-sentence description of work done (max 15 words): ${userMessagesText}`,
+          conversationHistory: []
+        })
+      });
+
+      const data = await response.json();
+      const summary = data.reply ? data.reply.replace(/COMPLETE:/i, '').trim() : userMessagesText.substring(0, 100);
+      setAiSummary(summary);
+    } catch (err) {
+      console.error(err);
+      setAiSummary(userMessagesText.substring(0, 60) + '...');
     } finally {
       setIsSummarizing(false);
     }
   };
 
-  const triggerConfetti = () => {
-    const duration = 3 * 1000;
-    const animationEnd = Date.now() + duration;
-    const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
-    const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min;
-    const interval: any = setInterval(function() {
-      const timeLeft = animationEnd - Date.now();
-      if (timeLeft <= 0) return clearInterval(interval);
-      const particleCount = 50 * (timeLeft / duration);
-      confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } });
-      confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
-    }, 250);
-  };
-
-  const finish = async () => {
+  // Save everything to Supabase
+  const handleCommitLog = async () => {
     setIsSyncing(true);
-    const finalSummary = aiSummary || content || 'Work session completed';
+    const finalSummary = aiSummary.trim() || 'Work session logged.';
+    const finalSkills = selectedSkills.length > 0 ? selectedSkills : ['General'];
+    const finalLearnings = learningsList.length > 0 ? learningsList : ['Progress logged successfully.'];
+
     try {
       await onComplete({
         answers: [finalSummary],
-        skills: selectedSkills,
-        learnings: [learnings || (isLearningOnly ? 'Theoretical learning' : 'General progress')]
+        skills: finalSkills,
+        learnings: finalLearnings
       });
+
+      // Show success screen
+      setStep(4);
       triggerConfetti();
-      toast.success('Work Log Committed');
-      setTimeout(() => router.replace('/'), 2500);
-    } catch (error) {
-      toast.error('Synchronization failed');
+      toast.success('Log successfully synchronized.');
+      setTimeout(() => {
+        router.replace('/');
+      }, 2500);
+    } catch (err) {
+      toast.error('Sync failed. Please retry.');
     } finally {
       setIsSyncing(false);
     }
   };
 
-  const toggleSkill = (skill: string) => {
-    setSelectedSkills(prev => {
-      const exists = prev.some(s => s.toLowerCase() === skill.toLowerCase());
-      return exists ? prev.filter(s => s.toLowerCase() !== skill.toLowerCase()) : [...prev, skill];
-    });
+  // Confetti celebration animation
+  const triggerConfetti = () => {
+    const duration = 2.5 * 1000;
+    const animationEnd = Date.now() + duration;
+    const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 100 };
+    const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min;
+    const interval: any = setInterval(function() {
+      const timeLeft = animationEnd - Date.now();
+      if (timeLeft <= 0) return clearInterval(interval);
+      const particleCount = 60 * (timeLeft / duration);
+      confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } });
+      confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
+    }, 200);
   };
 
-  const StepIndicator = () => (
-    <div className="flex items-center justify-between mb-16 relative px-4">
-      <div className="absolute top-1/2 left-0 right-0 h-[1px] bg-slate-100 -translate-y-1/2 z-0 mx-8" />
-      {[1, 2, 3, 4].map((i) => (
-        <div key={i} className="relative z-10 flex flex-col items-center gap-3">
-          <div 
-            className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-xs transition-all duration-300 border ${
-              step > i ? 'bg-emerald-500 border-emerald-400 text-white shadow-[0_0_15px_rgba(16,185,129,0.2)]' :
-              step === i ? 'bg-slate-900 border-slate-900 text-white shadow-xl scale-110' :
-              'bg-slate-50 border-slate-200 text-slate-400'
-            }`}
-          >
-            {step > i ? <Check className="w-5 h-5 stroke-[3px]" /> : i}
-          </div>
-        </div>
-      ))}
-    </div>
-  );
+  // Tag helper management
+  const addSkillTag = (skillName: string) => {
+    const clean = skillName.trim();
+    if (!clean) return;
+    if (!selectedSkills.some(s => s.toLowerCase() === clean.toLowerCase())) {
+      setSelectedSkills(prev => [...prev, clean]);
+    }
+    setCustomSkill('');
+  };
+
+  const removeSkillTag = (skillName: string) => {
+    setSelectedSkills(prev => prev.filter(s => s !== skillName));
+  };
+
+  const addLearningItem = (text: string) => {
+    const clean = text.trim();
+    if (!clean) return;
+    if (!learningsList.some(l => l.toLowerCase() === clean.toLowerCase())) {
+      setLearningsList(prev => [...prev, clean]);
+    }
+    setCustomLearning('');
+  };
+
+  const removeLearningItem = (index: number) => {
+    setLearningsList(prev => prev.filter((_, i) => i !== index));
+  };
+
+  // Calculate approximate chat completion progress (capped at 3 turns)
+  const chatTurnCount = messages.filter(m => m.role === 'user').length;
+  const progressPercent = Math.min((chatTurnCount / 3) * 100, 100);
 
   return (
-    <div className="bg-white rounded-[3rem] border border-slate-200 shadow-2xl overflow-hidden relative transition-all duration-500">
-      <div className="px-12 py-10 border-b border-slate-100 bg-slate-50/50 relative overflow-hidden">
-        <div className="absolute top-0 right-0 p-8 opacity-[0.03] pointer-events-none">
-          <Rocket className="w-32 h-32 text-slate-900" />
-        </div>
-        <div className="flex items-center justify-between mb-10 relative z-10">
-          <div className="flex items-center gap-6">
-            <div className="w-12 h-12 bg-slate-900 rounded-xl flex items-center justify-center shadow-lg group">
-              <Rocket className="w-6 h-6 text-white group-hover:scale-110 transition-transform" />
-            </div>
-            <div>
-              <h3 className="text-xl font-black text-slate-900 tracking-tight uppercase">Capture Session</h3>
-              <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em]">Performance Analytics</p>
-            </div>
-          </div>
-        </div>
-        <StepIndicator />
-      </div>
+    <div className="w-full max-w-5xl mx-auto font-outfit">
+      <AnimatePresence mode="wait">
+        
+        {/* STEP 1: WELCOME SCREEN */}
+        {step === 1 && (
+          <motion.div
+            key="welcome"
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="bg-white rounded-[2rem] border border-slate-200 shadow-xl p-6 sm:p-10 md:p-12 relative overflow-hidden"
+          >
+            {/* Background glowing decorations */}
+            <div className="absolute -top-40 -right-40 w-96 h-96 bg-blue-500/5 rounded-full blur-[100px] pointer-events-none" />
+            <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-indigo-500/5 rounded-full blur-[100px] pointer-events-none" />
 
-      <div className="p-6 md:p-10 min-h-[400px] md:min-h-[480px] flex flex-col">
-        <AnimatePresence mode="wait">
-          {step === 1 && (
-            <motion.div key="step1" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-6 flex-1">
-              <div>
-                <h4 className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4 flex items-center gap-3">
-                  <Code className="w-4 h-4 text-blue-500" /> Core Objective
-                </h4>
-                <textarea
-                  value={content}
-                  onChange={(e) => setContent(e.target.value)}
-                  placeholder={isLearningOnly ? "Describe technical concepts..." : "Outline tasks completed..."}
-                  className="w-full h-48 p-6 bg-slate-50 border border-slate-100 rounded-2xl focus:outline-none focus:border-slate-300 focus:bg-white transition-all font-medium text-slate-900 placeholder:text-slate-300 text-sm tracking-tight shadow-sm"
-                />
+            <div className="max-w-2xl mx-auto text-center space-y-6 md:space-y-8 relative z-10">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-slate-950 rounded-2xl shadow-xl shadow-slate-900/10 mb-2">
+                <Bot className="w-8 h-8 text-white animate-pulse" />
               </div>
-            </motion.div>
-          )}
 
-          {step === 2 && (
-            <motion.div key="step2" initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} className="space-y-8 flex-1">
-              <div>
-                <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] mb-8 flex items-center gap-3">
-                  <Sparkles className="w-4 h-4 text-blue-500" /> Tech Stack
-                </h4>
+              <div className="space-y-2">
+                <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 tracking-tight uppercase leading-tight">
+                  Initialize <span className="text-blue-600">Audit Session</span>
+                </h2>
+                <p className="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">
+                  Dynamic AI-Assisted Performance Capture
+                </p>
+              </div>
+
+              <p className="text-slate-500 font-medium text-xs sm:text-sm leading-relaxed max-w-lg mx-auto">
+                Connect with our work log AI to naturally discuss your daily achievements. 
+                We will automatically extract used skills, track learnings, and format a professional audit log.
+              </p>
+
+              <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4 max-w-md mx-auto">
+                <button
+                  onClick={startConversation}
+                  className="w-full sm:w-auto flex-1 px-6 py-4 bg-slate-900 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-black transition-all flex items-center justify-center gap-2 shadow-lg active:scale-[0.98]"
+                >
+                  <span>Start AI Conversation</span>
+                  <ArrowRight className="w-3.5 h-3.5 text-emerald-400" />
+                </button>
+                <button
+                  onClick={startManualLog}
+                  className="w-full sm:w-auto flex-1 px-6 py-4 bg-white border border-slate-200 text-slate-600 rounded-xl font-black text-[10px] uppercase tracking-widest hover:text-slate-900 hover:bg-slate-50 transition-all flex items-center justify-center gap-2 shadow-sm"
+                >
+                  <Edit2 className="w-3.5 h-3.5 text-slate-450" />
+                  <span>Manual Entry</span>
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* STEP 2: ACTIVE CONVERSATIONAL CHAT */}
+        {step === 2 && (
+          <motion.div
+            key="chat-session"
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.98 }}
+            className="flex flex-col gap-4 w-full"
+          >
+            {/* Mobile Tab Switcher */}
+            <div className="flex lg:hidden border border-slate-200 bg-slate-50 p-1 rounded-xl">
+              <button
+                type="button"
+                onClick={() => setActiveTab('chat')}
+                className={`flex-1 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${
+                  activeTab === 'chat'
+                    ? 'bg-slate-900 text-white shadow-sm'
+                    : 'text-slate-400 hover:text-slate-600'
+                }`}
+              >
+                Chat Assistant
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('intel')}
+                className={`flex-1 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all flex items-center justify-center gap-1.5 ${
+                  activeTab === 'intel'
+                    ? 'bg-slate-900 text-white shadow-sm'
+                    : 'text-slate-400 hover:text-slate-600'
+                }`}
+              >
+                <span>Session Intel</span>
+                {(selectedSkills.length > 0 || learningsList.length > 0) && (
+                  <span className="w-4 h-4 bg-blue-500 text-white text-[8px] font-bold rounded-full flex items-center justify-center">
+                    {selectedSkills.length + learningsList.length}
+                  </span>
+                )}
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+              
+              {/* Left: Chat Container */}
+              <div className={`lg:col-span-8 flex flex-col bg-white rounded-[2rem] border border-slate-200 shadow-md overflow-hidden h-[460px] sm:h-[500px] lg:h-[580px] ${
+                activeTab === 'chat' ? 'flex' : 'hidden lg:flex'
+              }`}>
                 
-                <div className="flex flex-wrap gap-3 mb-12">
-                  {SKILL_SUGGESTIONS.map(skill => (
-                    <button
-                      key={skill}
-                      onClick={() => toggleSkill(skill)}
-                      className={`px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border ${
-                        selectedSkills.some(s => s.toLowerCase() === skill.toLowerCase())
-                          ? 'bg-slate-900 border-slate-900 text-white shadow-xl'
-                          : 'bg-slate-50 border-slate-100 text-slate-400 hover:border-slate-200'
-                      }`}
-                    >
-                      {skill}
-                    </button>
-                  ))}
-                  
-                  {/* Render custom skills that aren't in suggestions */}
-                  {selectedSkills.filter(s => !SKILL_SUGGESTIONS.some(suggest => suggest.toLowerCase() === s.toLowerCase())).map(skill => (
-                    <button
-                      key={skill}
-                      onClick={() => toggleSkill(skill)}
-                      className="px-5 py-3 bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-200 rounded-xl text-xs font-bold transition-all border flex items-center gap-2"
-                    >
-                      {skill}
-                      <Check className="w-3 h-3" />
-                    </button>
-                  ))}
+                {/* Chat Header */}
+                <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 bg-slate-900 rounded-lg flex items-center justify-center shadow-sm">
+                      <Bot className="w-4 h-4 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="font-black text-slate-900 text-xs uppercase tracking-wider">Audit Session AI</h3>
+                      <div className="flex items-center gap-1 mt-0.5">
+                        <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping" />
+                        <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Listening</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={handleForceFinalize}
+                    className="px-3 py-1.5 border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg text-[8px] font-black uppercase tracking-wider transition-all flex items-center gap-1.5"
+                  >
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                    <span>Finalize Audit</span>
+                  </button>
                 </div>
 
-                <div className="space-y-4">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Add Not Mentioned Skills</p>
-                  <div className="flex gap-3">
-                    <div className="relative flex-1 group">
-                      <Plus className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-blue-500 transition-colors" />
+                {/* Messages Area */}
+                <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 scrollbar-thin bg-slate-50/10">
+                  <AnimatePresence initial={false}>
+                    {messages.map((msg, i) => (
+                      <motion.div
+                        key={i}
+                        initial={{ opacity: 0, y: 10, scale: 0.98 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} items-start gap-2.5`}
+                      >
+                        {msg.role === 'assistant' && (
+                          <div className="w-7 h-7 rounded-lg bg-slate-150 border border-slate-200 flex items-center justify-center flex-shrink-0 text-slate-600">
+                            <Bot className="w-3.5 h-3.5" />
+                          </div>
+                        )}
+                        
+                        <div className={`p-3 md:p-4 rounded-xl max-w-[85%] sm:max-w-[75%] shadow-sm ${
+                          msg.role === 'user'
+                            ? 'bg-slate-900 text-white rounded-tr-none font-medium text-xs md:text-sm leading-relaxed'
+                            : 'bg-white border border-slate-200 text-slate-800 rounded-tl-none font-medium text-xs md:text-sm leading-relaxed'
+                        }`}>
+                          {msg.content.includes('COMPLETE:') ? (
+                            <div className="space-y-1.5">
+                              <span className="inline-block px-1.5 py-0.5 bg-emerald-50 text-emerald-600 text-[8px] font-black tracking-widest uppercase rounded">Audit Complete</span>
+                              <p className="italic text-slate-600 font-bold">&quot;{msg.content.replace(/COMPLETE:/i, '').trim()}&quot;</p>
+                            </div>
+                          ) : (
+                            <p>{msg.content}</p>
+                          )}
+                          <span className={`block text-[7px] mt-1.5 font-bold uppercase ${msg.role === 'user' ? 'text-slate-400 text-right' : 'text-slate-350'}`}>
+                            {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        </div>
+
+                        {msg.role === 'user' && (
+                          <div className="w-7 h-7 rounded-lg bg-slate-900 flex items-center justify-center flex-shrink-0 text-white">
+                            <User className="w-3.5 h-3.5" />
+                          </div>
+                        )}
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+
+                  {isLoading && (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-start items-center gap-2.5">
+                      <div className="w-7 h-7 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-600">
+                        <Bot className="w-3.5 h-3.5" />
+                      </div>
+                      <div className="bg-white border border-slate-200 px-3 py-2 rounded-xl rounded-tl-none shadow-sm flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce [animation-delay:-0.3s]" />
+                        <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce [animation-delay:-0.15s]" />
+                        <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" />
+                      </div>
+                    </motion.div>
+                  )}
+                  <div ref={messagesEndRef} />
+                </div>
+
+                {/* Chat Input / Starters footer */}
+                <div className="p-4 border-t border-slate-100 bg-white space-y-3">
+                  {/* Suggestions displayed if no user messages yet */}
+                  {chatTurnCount === 0 && (
+                    <div className="space-y-1.5">
+                      <p className="text-[8px] font-black text-slate-300 uppercase tracking-wider">Select a starter response:</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {STARTER_CHIPS.map((chip, index) => (
+                          <button
+                            key={index}
+                            onClick={() => handleSendMessage(chip)}
+                            className="px-3 py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-left text-slate-600 hover:text-slate-900 text-[10px] font-medium transition-all"
+                          >
+                            {chip}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      handleSendMessage(input);
+                    }}
+                    className="flex gap-2 relative group"
+                  >
+                    <input
+                      type="text"
+                      value={input}
+                      onChange={(e) => setInput(e.target.value)}
+                      placeholder="Describe your work, achievements, or challenges..."
+                      disabled={isLoading}
+                      className="flex-1 pl-4 pr-12 py-3 bg-slate-50 border border-slate-200/80 rounded-xl focus:outline-none focus:border-slate-400 focus:bg-white transition-all font-medium text-xs text-slate-800 placeholder:text-slate-400 disabled:opacity-50"
+                    />
+                    <button
+                      type="submit"
+                      disabled={isLoading || !input.trim()}
+                      className="absolute right-1.5 top-1.5 bottom-1.5 px-3 bg-slate-900 hover:bg-black text-white rounded-lg shadow-sm transition-all flex items-center justify-center disabled:opacity-20"
+                    >
+                      <Send className="w-3.5 h-3.5" />
+                    </button>
+                  </form>
+                </div>
+
+              </div>
+
+              {/* Right: Live Session Intelligence Panel */}
+              <div className={`lg:col-span-4 flex flex-col space-y-4 ${
+                activeTab === 'intel' ? 'flex' : 'hidden lg:flex'
+              }`}>
+                
+                {/* Progress Tracker Card */}
+                <div className="bg-white rounded-[1.5rem] border border-slate-200 p-4 shadow-sm space-y-3">
+                  <div className="flex justify-between items-center">
+                    <h4 className="text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                      <Clock className="w-3.5 h-3.5 text-blue-500" /> Audit Depth
+                    </h4>
+                    <span className="text-[9px] font-black text-slate-800 uppercase tracking-wider">{chatTurnCount}/3 turns</span>
+                  </div>
+                  <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-slate-950 transition-all duration-500"
+                      style={{ width: `${progressPercent}%` }}
+                    />
+                  </div>
+                  <p className="text-[9px] text-slate-400 font-medium leading-relaxed">
+                    We require around 2-3 conversation exchanges to automatically summarize your work log effectively.
+                  </p>
+                </div>
+
+                {/* Live Skills Card */}
+                <div className="bg-white rounded-[1.5rem] border border-slate-200 p-4 shadow-sm flex-1 flex flex-col justify-between min-h-[160px]">
+                  <div className="space-y-3">
+                    <h4 className="text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                      <Code className="w-3.5 h-3.5 text-indigo-500" /> Extracted Skills
+                    </h4>
+                    
+                    {selectedSkills.length === 0 ? (
+                      <div className="py-4 text-center">
+                        <span className="text-[10px] text-slate-350 font-medium">No skills detected. Mention tech stack in chat.</span>
+                      </div>
+                    ) : (
+                      <div className="flex flex-wrap gap-1.5">
+                        {selectedSkills.map((skill, index) => (
+                          <div
+                            key={index}
+                            className="px-2 py-1 bg-blue-50 border border-blue-100 rounded-lg text-blue-600 text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5"
+                          >
+                            <span>{skill}</span>
+                            <button
+                              type="button"
+                              onClick={() => removeSkillTag(skill)}
+                              className="hover:text-red-500 transition-colors"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Predefined skill injections */}
+                    <div className="pt-2 border-t border-slate-100">
+                      <p className="text-[8px] font-black text-slate-300 uppercase tracking-wider mb-1.5">Quick Inject:</p>
+                      <div className="flex flex-wrap gap-1">
+                        {POPULAR_SKILLS.map((skill) => (
+                          <button
+                            key={skill}
+                            type="button"
+                            onClick={() => addSkillTag(skill)}
+                            disabled={selectedSkills.some(s => s.toLowerCase() === skill.toLowerCase())}
+                            className="px-1.5 py-0.5 bg-slate-50 border border-slate-100 hover:border-slate-300 rounded text-[8px] font-bold text-slate-400 hover:text-slate-800 disabled:opacity-30 transition-all uppercase tracking-widest"
+                          >
+                            +{skill}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Manual Skill Inject Input */}
+                  <div className="pt-3 border-t border-slate-100 mt-3 flex gap-1.5">
+                    <input
+                      type="text"
+                      value={customSkill}
+                      onChange={(e) => setCustomSkill(e.target.value)}
+                      placeholder="Add skill manually..."
+                      className="flex-1 px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-slate-400 font-semibold text-[9px] text-slate-800 placeholder:text-slate-350 uppercase tracking-wider"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          addSkillTag(customSkill);
+                        }
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => addSkillTag(customSkill)}
+                      className="p-1.5 bg-slate-900 text-white rounded-lg hover:bg-black transition-colors"
+                    >
+                      <Plus className="w-3 h-3" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Live Learnings Card */}
+                <div className="bg-white rounded-[1.5rem] border border-slate-200 p-4 shadow-sm flex-1 flex flex-col justify-between min-h-[160px]">
+                  <div className="space-y-3">
+                    <h4 className="text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                      <Brain className="w-3.5 h-3.5 text-emerald-500" /> Strategic Learnings
+                    </h4>
+
+                    {learningsList.length === 0 ? (
+                      <div className="py-4 text-center">
+                        <span className="text-[10px] text-slate-350 font-medium">No learnings captured. Mention insights in chat.</span>
+                      </div>
+                    ) : (
+                      <div className="space-y-1.5 max-h-32 overflow-y-auto scrollbar-thin pr-1">
+                        {learningsList.map((item, index) => (
+                          <div
+                            key={index}
+                            className="p-2 bg-emerald-50/50 border border-emerald-100/50 rounded-lg flex items-start gap-1.5 text-slate-700 text-[10px] font-medium"
+                          >
+                            <span className="text-emerald-500 font-black mt-0.5">•</span>
+                            <span className="flex-1 leading-relaxed italic">&quot;{item}&quot;</span>
+                            <button
+                              type="button"
+                              onClick={() => removeLearningItem(index)}
+                              className="text-slate-300 hover:text-red-500 transition-colors flex-shrink-0"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Manual Learning Inject Input */}
+                  <div className="pt-3 border-t border-slate-100 mt-3 flex gap-1.5">
+                    <input
+                      type="text"
+                      value={customLearning}
+                      onChange={(e) => setCustomLearning(e.target.value)}
+                      placeholder="Add learning details..."
+                      className="flex-1 px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-slate-400 font-medium text-[10px] text-slate-800 placeholder:text-slate-350"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          addLearningItem(customLearning);
+                        }
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => addLearningItem(customLearning)}
+                      className="p-1.5 bg-slate-900 text-white rounded-lg hover:bg-black transition-colors"
+                    >
+                      <Plus className="w-3 h-3" />
+                    </button>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* STEP 3: AUDIT REVIEW & CONFIRMATION */}
+        {step === 3 && (
+          <motion.div
+            key="audit-review"
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, y: 15 }}
+            className="bg-white rounded-[2rem] border border-slate-200 shadow-xl p-5 sm:p-8 md:p-10 space-y-8 relative overflow-hidden"
+          >
+            {/* Header */}
+            <div className="border-b border-slate-100 pb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-slate-900 rounded-xl flex items-center justify-center text-white">
+                  <Sparkles className="w-5 h-5 animate-pulse" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight">Review Performance Audit</h3>
+                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mt-0.5">Verify summary & tags before commit</p>
+                </div>
+              </div>
+
+              {messages.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setStep(2)}
+                  className="w-full sm:w-auto px-3.5 py-2 border border-slate-200 hover:bg-slate-50 rounded-xl text-[8px] font-black text-slate-500 hover:text-slate-800 uppercase tracking-wider transition-all flex items-center justify-center gap-1.5"
+                >
+                  <ArrowLeft className="w-3.5 h-3.5" />
+                  <span>Resume Conversation</span>
+                </button>
+              )}
+            </div>
+
+            {isSummarizing ? (
+              <div className="py-16 flex flex-col items-center justify-center gap-3 text-center">
+                <div className="w-10 h-10 border-[3px] border-slate-200 border-t-slate-900 rounded-full animate-spin shadow-sm" />
+                <div className="space-y-1">
+                  <span className="block text-xs font-black text-slate-900 uppercase tracking-[0.3em]">Synthesizing Audit Summary</span>
+                  <span className="block text-[8px] font-black text-slate-400 uppercase tracking-[0.2em]">Structuring corporate intelligence record</span>
+                </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Left Column: Editable Summary */}
+                <div className="space-y-3">
+                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1 flex items-center gap-1.5">
+                    <MessageSquare className="w-3.5 h-3.5 text-blue-500" />
+                    AI-Synthesized Summary
+                  </label>
+                  <textarea
+                    value={aiSummary}
+                    onChange={(e) => setAiSummary(e.target.value)}
+                    placeholder="Enter manual work log summary..."
+                    className="w-full h-[180px] md:h-[220px] p-4 sm:p-5 bg-slate-50 border border-slate-100 rounded-2xl focus:outline-none focus:border-slate-300 focus:bg-white transition-all font-medium text-slate-900 placeholder:text-slate-350 text-xs md:text-sm leading-relaxed tracking-tight shadow-sm"
+                  />
+                  <div className="flex items-center gap-1.5 text-slate-400 text-[9px] font-medium ml-1">
+                    <AlertCircle className="w-3.5 h-3.5 flex-shrink-0 text-slate-400" />
+                    <span>This summary will be saved to your dashboard and visible to squad leads.</span>
+                  </div>
+                </div>
+
+                {/* Right Column: Skills & Learnings */}
+                <div className="space-y-6">
+                  
+                  {/* Skills Grid */}
+                  <div className="space-y-3">
+                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1 flex items-center gap-1.5">
+                      <Code className="w-3.5 h-3.5 text-indigo-500" />
+                      Applied Technology Stack
+                    </label>
+                    
+                    <div className="flex flex-wrap gap-1.5 p-3.5 bg-slate-50 border border-slate-100 rounded-2xl min-h-[70px]">
+                      {selectedSkills.length === 0 ? (
+                        <span className="text-slate-350 text-[10px] font-semibold self-center mx-auto">No skills added yet</span>
+                      ) : (
+                        selectedSkills.map((skill, index) => (
+                          <div
+                            key={index}
+                            className="px-2 py-1 bg-white border border-slate-200/80 rounded-lg text-slate-800 text-[9px] font-black uppercase tracking-wider flex items-center gap-1.5 shadow-sm"
+                          >
+                            <span>{skill}</span>
+                            <button
+                              type="button"
+                              onClick={() => removeSkillTag(skill)}
+                              className="hover:text-red-500 text-slate-400 transition-colors"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </div>
+                        ))
+                      )}
+                    </div>
+
+                    <div className="flex gap-2">
                       <input
                         type="text"
                         value={customSkill}
                         onChange={(e) => setCustomSkill(e.target.value)}
+                        placeholder="Type and press enter to add skill..."
+                        className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200/85 rounded-xl focus:outline-none focus:border-slate-400 font-semibold text-[9px] text-slate-800 placeholder:text-slate-350 uppercase tracking-widest"
                         onKeyDown={(e) => {
                           if (e.key === 'Enter') {
                             e.preventDefault();
-                            if (customSkill.trim()) {
-                              toggleSkill(customSkill.trim());
-                              setCustomSkill('');
-                            }
+                            addSkillTag(customSkill);
                           }
                         }}
-                        placeholder="ENTER CUSTOM SKILL (EX: GOOGLE CLOUD)..."
-                        className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:border-blue-500 transition-all font-black text-slate-900 text-[10px] tracking-widest placeholder:text-slate-200"
                       />
+                      <button
+                        type="button"
+                        onClick={() => addSkillTag(customSkill)}
+                        className="px-3 bg-slate-900 text-white rounded-xl hover:bg-black transition-colors font-black text-[8px] uppercase tracking-wider"
+                      >
+                        Add
+                      </button>
                     </div>
-                    <button
-                      onClick={() => {
-                        if (customSkill.trim()) {
-                          toggleSkill(customSkill.trim());
-                          setCustomSkill('');
-                        }
-                      }}
-                      className="px-6 bg-slate-900 text-white rounded-2xl hover:bg-black transition-all font-black uppercase tracking-widest text-[10px] flex items-center justify-center shadow-lg shadow-slate-900/10"
-                    >
-                      Add
-                    </button>
                   </div>
-                </div>
-              </div>
-            </motion.div>
-          )}
 
-          {step === 3 && (
-            <motion.div key="step3" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-8 flex-1">
-              <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <h4 className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] flex items-center gap-3">
-                    <Brain className="w-4 h-4 text-blue-500" /> Suggested Insights
-                  </h4>
-                  {isGeneratingSuggestions && <div className="w-4 h-4 border-2 border-slate-200 border-t-blue-500 rounded-full animate-spin" />}
-                </div>
+                  {/* Learnings Grid */}
+                  <div className="space-y-3">
+                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1 flex items-center gap-1.5">
+                      <Brain className="w-3.5 h-3.5 text-emerald-500" />
+                      Key Learnings & takeaways
+                    </label>
 
-                <div className="grid grid-cols-1 gap-3">
-                  {suggestions.map((s, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setLearnings(s)}
-                      className={`p-5 rounded-2xl text-left transition-all border ${
-                        learnings === s 
-                          ? 'bg-blue-600 border-blue-600 text-white shadow-lg' 
-                          : 'bg-slate-50 border-slate-100 text-slate-600 hover:border-slate-200'
-                      }`}
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className={`w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-bold ${learnings === s ? 'bg-white/20' : 'bg-white border border-slate-100'}`}>
-                          {i + 1}
+                    <div className="space-y-1.5 p-3.5 bg-slate-50 border border-slate-100 rounded-2xl min-h-[80px] max-h-32 overflow-y-auto scrollbar-thin">
+                      {learningsList.length === 0 ? (
+                        <div className="flex items-center justify-center h-full min-h-[50px]">
+                          <span className="text-slate-350 text-[10px] font-semibold">No learning bullets added</span>
                         </div>
-                        <p className="text-[11px] font-bold italic tracking-tight leading-snug">&quot;{s}&quot;</p>
-                      </div>
-                    </button>
-                  ))}
+                      ) : (
+                        learningsList.map((item, index) => (
+                          <div
+                            key={index}
+                            className="p-2 bg-white border border-slate-200/80 rounded-lg flex items-start justify-between gap-2.5 text-slate-755 text-[10px] font-medium shadow-sm"
+                          >
+                            <div className="flex gap-1.5">
+                              <span className="text-emerald-500 font-bold">•</span>
+                              <span className="leading-relaxed italic">&quot;{item}&quot;</span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => removeLearningItem(index)}
+                              className="text-slate-400 hover:text-red-500 transition-colors"
+                            >
+                              <Trash2 className="w-3.5 h-3.5 animate-none" />
+                            </button>
+                          </div>
+                        ))
+                      )}
+                    </div>
+
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={customLearning}
+                        onChange={(e) => setCustomLearning(e.target.value)}
+                        placeholder="Add strategic insight or takeaway..."
+                        className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200/85 rounded-xl focus:outline-none focus:border-slate-400 font-medium text-[10px] text-slate-800 placeholder:text-slate-350"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            addLearningItem(customLearning);
+                          }
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => addLearningItem(customLearning)}
+                        className="px-3 bg-slate-900 text-white rounded-xl hover:bg-black transition-colors font-black text-[8px] uppercase tracking-wider"
+                      >
+                        Add
+                      </button>
+                    </div>
+                  </div>
+
                 </div>
-
-                <div className="space-y-4 pt-4 border-t border-slate-100">
-                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Custom Insight Override</p>
-                  <textarea
-                    value={learnings}
-                    onChange={(e) => setLearnings(e.target.value)}
-                    placeholder="Identify a custom strategic takeaway..."
-                    className="w-full h-32 p-6 bg-slate-50 border border-slate-100 rounded-2xl focus:outline-none focus:border-slate-300 focus:bg-white transition-all font-medium text-slate-900 placeholder:text-slate-300 text-sm tracking-tight shadow-sm"
-                  />
-                </div>
               </div>
-            </motion.div>
-          )}
-
-          {step === 4 && (
-            <motion.div key="step4" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="space-y-12 flex-1 flex flex-col justify-center items-center text-center py-10">
-              <div className="w-24 h-24 bg-slate-50 border border-slate-200 rounded-[2rem] flex items-center justify-center mb-6 relative group overflow-hidden">
-                <div className="absolute inset-0 bg-blue-500/5 animate-pulse" />
-                <Sparkles className={`w-10 h-10 text-slate-900 relative z-10 ${isSummarizing ? 'animate-spin' : 'animate-bounce'}`} />
-              </div>
-              <div className="space-y-4">
-                <h4 className="text-3xl font-black text-slate-900 tracking-tight uppercase">
-                  {isSummarizing ? 'Synthesizing...' : 'Audit Ready'}
-                </h4>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.5em]">Protocol Finalization</p>
-              </div>
-              <div className="bg-white p-12 rounded-[3rem] border border-slate-100 shadow-2xl max-w-2xl w-full relative overflow-hidden group">
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                <p className="text-slate-900 font-black text-2xl tracking-tight leading-snug italic relative z-10">
-                  &quot;{aiSummary || 'Syncing data...'}&quot;
-                </p>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        <div className="mt-12 flex justify-between items-center pt-8 border-t border-slate-100">
-          {step > 1 && step < 4 ? (
-            <button onClick={() => setStep(step - 1)} className="px-6 py-2 text-slate-400 font-black hover:text-slate-900 transition-colors uppercase tracking-[0.2em] text-[9px]">Back</button>
-          ) : <div />}
-          
-          <button
-            onClick={handleNext}
-            disabled={(step === 1 && !content.trim()) || isSummarizing || isSyncing || (step === 4 && (!aiSummary || !content.trim()))}
-            className="px-8 py-4 bg-slate-900 text-white rounded-xl shadow-lg hover:bg-black active:scale-[0.98] transition-all font-black uppercase tracking-[0.15em] text-[10px] flex items-center gap-4 disabled:opacity-10"
-          >
-            {step === 4 ? (
-              <>
-                <Check className="w-4 h-4 stroke-[3px]" />
-                <span>{isSyncing ? 'Synchronizing...' : 'Commit to History'}</span>
-              </>
-            ) : (
-              <>
-                <span>{step === 3 ? 'Finalize Audit' : 'Proceed'}</span>
-                <ArrowRight className="w-4 h-4" />
-              </>
             )}
-          </button>
-        </div>
-      </div>
+
+            {/* Commit / Save Actions footer */}
+            {!isSummarizing && (
+              <div className="pt-6 border-t border-slate-100 flex justify-end items-center gap-4">
+                <button
+                  type="button"
+                  onClick={handleCommitLog}
+                  disabled={isSyncing || !aiSummary.trim()}
+                  className="w-full sm:w-auto px-6 py-3.5 bg-slate-900 text-white rounded-xl shadow-md hover:bg-black active:scale-[0.98] transition-all font-black uppercase tracking-[0.15em] text-[9px] flex items-center justify-center gap-2.5 disabled:opacity-20"
+                >
+                  <Check className="w-3.5 h-3.5 text-emerald-400 stroke-[3px]" />
+                  <span>{isSyncing ? 'Synchronizing...' : 'Commit to History'}</span>
+                </button>
+              </div>
+            )}
+
+          </motion.div>
+        )}
+
+        {/* STEP 4: CELEBRATION SUCCESS SCREEN */}
+        {step === 4 && (
+          <motion.div
+            key="success-celebration"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white rounded-[2rem] border border-slate-200 shadow-xl p-8 md:p-14 text-center space-y-6 relative overflow-hidden"
+          >
+            <div className="absolute -top-40 -right-40 w-96 h-96 bg-emerald-500/5 rounded-full blur-[100px] pointer-events-none" />
+            <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-blue-500/5 rounded-full blur-[100px] pointer-events-none" />
+            
+            <div className="max-w-md mx-auto space-y-4 relative z-10 flex flex-col items-center">
+              <div className="w-16 h-16 bg-emerald-50 border border-emerald-100 rounded-full flex items-center justify-center mb-1">
+                <CheckCircle2 className="w-8 h-8 text-emerald-500 animate-bounce" />
+              </div>
+
+              <div className="space-y-1">
+                <h3 className="text-xl md:text-3xl font-black text-slate-900 tracking-tight uppercase">Audit Completed</h3>
+                <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em]">Performance Synced Successfully</p>
+              </div>
+
+              <p className="text-slate-555 text-xs leading-relaxed">
+                Your performance capture session has been committed to the secure ledger. Redirecting to tactical dashboard...
+              </p>
+
+              <div className="pt-4">
+                <div className="w-6 h-6 border-2 border-slate-200 border-t-emerald-500 rounded-full animate-spin mx-auto" />
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+      </AnimatePresence>
     </div>
   );
 }

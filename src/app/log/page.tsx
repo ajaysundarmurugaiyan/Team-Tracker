@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import LoggerWizard from '@/components/LoggerWizard';
 import { useLogs } from '@/hooks/useLogs';
 import { useProfile } from '@/hooks/useProfile';
+import { useProjects } from '@/contexts/ProjectContext';
 import { extractSkills, extractLearnings } from '@/lib/parser';
 import { formatDate } from '@/lib/dates';
 import { useRouter } from 'next/navigation';
@@ -12,6 +13,7 @@ import { motion } from 'framer-motion';
 export default function LogPage() {
   const { addLog } = useLogs();
   const { user, profile, loading, updateSkills } = useProfile();
+  const { tagLogToProject } = useProjects();
   const router = useRouter();
 
   useEffect(() => {
@@ -38,7 +40,7 @@ export default function LogPage() {
     );
   }
 
-  const handleComplete = async (data: { answers: string[], skills?: string[], learnings?: string[] }) => {
+  const handleComplete = async (data: { answers: string[], skills?: string[], learnings?: string[], projectId?: string }) => {
     const combined = data.answers.join(' ');
     
     const allSkills = data.skills && data.skills.length > 0 
@@ -56,7 +58,11 @@ export default function LogPage() {
       learnings: allLearnings
     };
 
-    await addLog(log);
+    const newLogId = await addLog(log);
+    if (newLogId && data.projectId) {
+      await tagLogToProject(newLogId, data.projectId);
+    }
+    
     await updateSkills(allSkills);
   };
 

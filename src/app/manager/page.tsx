@@ -116,6 +116,13 @@ function ManagerDashboard() {
             </div>
           </div>
           <button 
+            onClick={() => router.push('/projects')}
+            className="w-full py-2.5 px-4 bg-slate-900 border border-slate-900 rounded-xl text-[8px] font-black uppercase tracking-widest text-white hover:bg-black transition-all flex items-center justify-between group"
+          >
+            <span>Projects Hub</span>
+            <Globe className="w-3 h-3 group-hover:scale-110 transition-transform" />
+          </button>
+          <button 
             onClick={signOut}
             className="w-full py-2.5 px-4 bg-slate-50 border border-slate-100 rounded-xl text-[8px] font-black uppercase tracking-widest text-slate-400 hover:text-red-500 hover:bg-red-50/50 transition-all flex items-center justify-between group"
           >

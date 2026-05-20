@@ -11,9 +11,10 @@ import { toast } from 'sonner';
 import confetti from 'canvas-confetti';
 import { ChatMessage } from '@/types/chat';
 import { extractSkills, extractLearnings } from '@/lib/parser';
+import { useProjects } from '@/contexts/ProjectContext';
 
 interface Props {
-  onComplete: (data: any) => void;
+  onComplete: (data: { answers: string[]; skills: string[]; learnings: string[]; projectId?: string }) => Promise<void>;
 }
 
 const STARTER_CHIPS = [
@@ -39,6 +40,8 @@ export default function LoggerWizard({ onComplete }: Props) {
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
   const [learningsList, setLearningsList] = useState<string[]>([]);
   const [aiSummary, setAiSummary] = useState('');
+  const [selectedProjectId, setSelectedProjectId] = useState<string>('');
+  const { projects } = useProjects();
   
   // Custom field controls
   const [customSkill, setCustomSkill] = useState('');
@@ -227,7 +230,8 @@ export default function LoggerWizard({ onComplete }: Props) {
       await onComplete({
         answers: [finalSummary],
         skills: finalSkills,
-        learnings: finalLearnings
+        learnings: finalLearnings,
+        projectId: selectedProjectId || undefined
       });
 
       // Show success screen
@@ -739,7 +743,28 @@ export default function LoggerWizard({ onComplete }: Props) {
                     placeholder="Enter manual work log summary..."
                     className="w-full h-[180px] md:h-[220px] p-4 sm:p-5 bg-slate-50 border border-slate-100 rounded-2xl focus:outline-none focus:border-slate-300 focus:bg-white transition-all font-medium text-slate-900 placeholder:text-slate-350 text-xs md:text-sm leading-relaxed tracking-tight shadow-sm"
                   />
-                  <div className="flex items-center gap-1.5 text-slate-400 text-[9px] font-medium ml-1">
+                  
+                  {/* Optional Project Tagging */}
+                  {projects.length > 0 && (
+                    <div className="pt-2 space-y-2">
+                      <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1 flex items-center gap-1.5">
+                        <Rocket className="w-3.5 h-3.5 text-orange-500" />
+                        Tag to Project (Optional)
+                      </label>
+                      <select
+                        value={selectedProjectId}
+                        onChange={(e) => setSelectedProjectId(e.target.value)}
+                        className="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:border-slate-300 font-medium text-slate-700 text-xs shadow-sm cursor-pointer"
+                      >
+                        <option value="">-- Unassigned (General Log) --</option>
+                        {projects.map(p => (
+                          <option key={p.id} value={p.id}>{p.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+
+                  <div className="flex items-center gap-1.5 text-slate-400 text-[9px] font-medium ml-1 mt-2">
                     <AlertCircle className="w-3.5 h-3.5 flex-shrink-0 text-slate-400" />
                     <span>This summary will be saved to your dashboard and visible to squad leads.</span>
                   </div>

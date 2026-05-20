@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 
 interface LogContextType {
   logs: WorkLog[];
-  addLog: (log: any) => Promise<void>;
+  addLog: (log: any) => Promise<string | null>;
   getLogsByDate: (date: string) => WorkLog[];
   fetchAllMembersLogs: () => Promise<WorkLog[]>;
   loading: boolean;
@@ -61,8 +61,8 @@ export function LogProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const addLog = async (logData: any) => {
-    if (!user) return;
+  const addLog = async (logData: any): Promise<string | null> => {
+    if (!user) return null;
 
     try {
       const { data, error } = await supabase
@@ -80,7 +80,7 @@ export function LogProvider({ children }: { children: ReactNode }) {
 
       if (error) {
         toast.error(`Audit failed to commit: ${error.message}`);
-        return;
+        return null;
       }
 
       if (data) {
@@ -93,10 +93,13 @@ export function LogProvider({ children }: { children: ReactNode }) {
           createdAt: new Date(data.created_at).getTime()
         };
         setLogs(prev => [newLog, ...prev]);
+        return data.id;
       }
+      return null;
     } catch (err) {
       console.error('Add log exception:', err);
       toast.error('System error while committing audit');
+      return null;
     }
   };
 

@@ -90,6 +90,16 @@ export default function HomePage() {
                 <span>Lead Ops</span>
               </button>
             )}
+
+            {(profile?.role === 'member' || profile?.role === 'lead') && (
+              <button
+                onClick={() => router.push('/projects')}
+                className="flex-1 sm:flex-none px-4 py-3 sm:py-4 bg-white border border-slate-200 rounded-xl text-slate-600 hover:text-slate-900 transition-all font-black uppercase tracking-widest text-[8px] sm:text-[10px] flex items-center justify-center gap-2 shadow-sm whitespace-nowrap"
+              >
+                <svg className="w-3 h-3 sm:w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                <span>Projects</span>
+              </button>
+            )}
             
             {profile?.role !== 'manager' && (
               <button

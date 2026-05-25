@@ -241,18 +241,18 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
             </div>
 
             {/* Actions */}
-            <div className="flex items-center gap-3 shrink-0">
+            <div className="flex items-center gap-3 shrink-0 w-full md:w-auto mt-4 md:mt-0">
               {canManageProject && project.status === 'active' && (
                 <button
                   onClick={handleMarkComplete}
                   disabled={isMarkingComplete}
-                  className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-md shadow-indigo-200 disabled:opacity-50"
+                  className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-md shadow-indigo-200 disabled:opacity-50"
                 >
                   <CheckCircle2 className="w-3.5 h-3.5" />
-                  {isMarkingComplete ? 'Updating...' : 'Mark Complete'}
+                  <span className="truncate">{isMarkingComplete ? 'Updating...' : 'Mark Complete'}</span>
                 </button>
               )}
-              <button onClick={() => router.push('/projects')} className="w-9 h-9 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-center hover:bg-slate-100 transition-colors text-slate-500">
+              <button onClick={() => router.push('/projects')} className="w-10 h-10 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-center hover:bg-slate-100 transition-colors text-slate-500 shrink-0">
                 <ArrowLeft className="w-4 h-4" />
               </button>
             </div>
@@ -295,12 +295,12 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
           </div>
 
           {/* Tab bar */}
-          <div className="flex gap-1 p-1 bg-slate-50 border border-slate-200 rounded-xl w-fit overflow-x-auto">
+          <div className="flex gap-1 p-1 bg-slate-50 border border-slate-200 rounded-xl w-full sm:w-fit overflow-x-auto no-scrollbar snap-x">
             {TABS.map(tab => (
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
-                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all whitespace-nowrap ${
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all whitespace-nowrap snap-start shrink-0 ${
                   activeTab === tab.key
                     ? 'bg-white shadow-sm text-slate-900 border border-slate-200'
                     : 'text-slate-400 hover:text-slate-700'

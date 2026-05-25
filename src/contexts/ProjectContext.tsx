@@ -19,7 +19,7 @@ interface ProjectContextType {
   projects: Project[];
   loading: boolean;
   createProject: (data: { name: string; description?: string; startDate: string; endDate?: string }) => Promise<Project | null>;
-  updateProject: (id: string, data: Partial<{ name: string; description: string; startDate: string; endDate: string; status: 'active' | 'completed' | 'archived' }>) => Promise<void>;
+  updateProject: (id: string, data: Partial<{ name: string; description: string; startDate: string; endDate: string; status: 'active' | 'completed' | 'archived' }>) => Promise<boolean>;
   deleteProject: (id: string) => Promise<void>;
   addMemberToProject: (projectId: string, employeeId: string, role?: string) => Promise<void>;
   removeMemberFromProject: (projectId: string, memberId: string) => Promise<void>;

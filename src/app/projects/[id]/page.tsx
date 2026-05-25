@@ -132,9 +132,12 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
   const handleMarkComplete = async () => {
     if (!project || !canManageProject) return;
     setIsMarkingComplete(true);
-    await updateProject(project.id, { status: 'completed' });
-    setProject(prev => prev ? { ...prev, status: 'completed' } : null);
-    setActiveTab('retrospective');
+    const today = new Date().toISOString().split('T')[0];
+    const success = await updateProject(project.id, { status: 'completed', endDate: today });
+    if (success !== false) { // updateProject might return void if typing was weird, but now it returns boolean
+      setProject(prev => prev ? { ...prev, status: 'completed', endDate: today } : null);
+      setActiveTab('retrospective');
+    }
     setIsMarkingComplete(false);
   };
 

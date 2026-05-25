@@ -59,7 +59,7 @@ function StatCard({ icon, label, value, sub }: { icon: React.ReactNode; label: s
 
 export default function ProjectDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const { fetchProjectById, fetchProjectMembers, fetchProjectLogs, updateProject, addMemberToProject, loading: ctxLoading } = useProjects();
+  const { fetchProjectById, fetchProjectMembers, fetchProjectLogs, updateProject, addMemberToProject, removeMemberFromProject, loading: ctxLoading } = useProjects();
   const { profile } = useProfile();
   const router = useRouter();
 

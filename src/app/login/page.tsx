@@ -35,10 +35,10 @@ export default function LoginPage() {
 
         if (profile?.role === 'lead') {
           toast.info('Lead identity detected. Redirecting to Lead Portal...');
-          window.location.replace('/lead-login');
+          window.location.replace('/lead');
         } else if (profile?.role === 'manager') {
           toast.info('Executive identity detected. Redirecting to Manager Portal...');
-          window.location.replace('/manager-login');
+          window.location.replace('/manager');
         } else {
           toast.success('Access Granted');
           window.location.replace('/'); 
@@ -53,18 +53,15 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-[#f8fafc] flex items-center justify-center p-6 relative overflow-hidden font-outfit">
-      {/* Background Decoration */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-blue-500/5 blur-[150px] rounded-full" />
-        <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-indigo-500/5 blur-[150px] rounded-full" />
-      </div>
+      {/* Minimal Background */}
+      <div className="absolute inset-0 pointer-events-none bg-[#f8fafc]" />
 
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-md bg-white rounded-[2.5rem] border border-slate-200 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.08)] p-8 md:p-10 z-10 relative overflow-hidden mb-8"
       >
-        <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-blue-500 via-indigo-500 to-blue-500" />
+        <div className="absolute top-0 left-0 w-full h-1.5 bg-slate-900" />
         
         <div className="text-center space-y-4 mb-10">
           <div className="flex justify-center">

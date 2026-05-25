@@ -100,7 +100,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
         }
 
         setUser(currentUser);
-        if (currentUser && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')) {
+        if (currentUser && event === 'SIGNED_IN') {
           await fetchProfile(currentUser.id);
         } else if (event === 'SIGNED_OUT') {
           setProfile(null);

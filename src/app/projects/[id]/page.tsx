@@ -70,13 +70,15 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
   const [activeTab, setActiveTab] = useState<TabKey>('activity');
   const [isMarkingComplete, setIsMarkingComplete] = useState(false);
   const [newMemberId, setNewMemberId] = useState('');
-  const [newMemberRole, setNewMemberRole] = useState('');
+  const [newMemberRole, setNewMemberRole] = useState('Member');
   const [isAddingMember, setIsAddingMember] = useState(false);
 
   const isLead = profile?.role === 'lead' || profile?.role === 'manager';
   const isProjectLead = project ? profile?.id === project.leadId : false;
   const isManager = profile?.role === 'manager';
-  const canManage = isProjectLead || isManager;
+  
+  const canManageProject = isProjectLead || isManager;
+  const canManageMembers = isLead || isManager;
 
   useEffect(() => {
     if (ctxLoading) return;
@@ -128,7 +130,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
   }, [project]);
 
   const handleMarkComplete = async () => {
-    if (!project || !canManage) return;
+    if (!project || !canManageProject) return;
     setIsMarkingComplete(true);
     await updateProject(project.id, { status: 'completed' });
     setProject(prev => prev ? { ...prev, status: 'completed' } : null);
@@ -137,18 +139,27 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
   };
 
   const handleAddMember = async () => {
-    if (!project || !newMemberId || !canManage) return;
+    if (!project || !newMemberId || !canManageMembers) return;
     setIsAddingMember(true);
     try {
-      await addMemberToProject(project.id, newMemberId, newMemberRole || 'developer');
+      await addMemberToProject(project.id, newMemberId, newMemberRole || 'Member');
       const m = await fetchProjectMembers(project.id);
       setMembers(m);
       setNewMemberId('');
-      setNewMemberRole('');
+      setNewMemberRole('Member');
     } catch (e) {
       console.error(e);
     } finally {
       setIsAddingMember(false);
+    }
+  };
+
+  const handleRemoveMember = async (memberId: string) => {
+    if (!project || !canManageMembers) return;
+    if (confirm('Are you sure you want to remove this member from the project?')) {
+      await removeMemberFromProject(project.id, memberId);
+      const m = await fetchProjectMembers(project.id);
+      setMembers(m);
     }
   };
 
@@ -227,7 +238,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
 
             {/* Actions */}
             <div className="flex items-center gap-3 shrink-0">
-              {canManage && project.status === 'active' && (
+              {canManageProject && project.status === 'active' && (
                 <button
                   onClick={handleMarkComplete}
                   disabled={isMarkingComplete}
@@ -428,7 +439,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                 )}
               </div>
 
-              {canManage && project?.status === 'active' && (
+              {canManageMembers && project?.status === 'active' && (
                 <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-4 items-end">
                   <div className="flex-1 w-full space-y-1.5">
                     <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Employee ID</label>
@@ -441,14 +452,18 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                     />
                   </div>
                   <div className="flex-1 w-full space-y-1.5">
-                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Role (Optional)</label>
-                    <input 
-                      type="text" 
-                      placeholder="e.g. Developer, Designer"
-                      value={newMemberRole}
-                      onChange={e => setNewMemberRole(e.target.value)}
-                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all"
-                    />
+                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Role</label>
+                    <div className="relative">
+                      <select 
+                        value={newMemberRole}
+                        onChange={e => setNewMemberRole(e.target.value)}
+                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all appearance-none cursor-pointer text-slate-800"
+                      >
+                        <option value="Member">Member</option>
+                        <option value="Lead">Lead</option>
+                      </select>
+                      <ChevronRight className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none rotate-90" />
+                    </div>
                   </div>
                   <button
                     onClick={handleAddMember}
@@ -518,7 +533,15 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                           </div>
                           <div className="text-right">
                             <div className="text-lg font-black text-slate-900">{contribution?.logs.length ?? 0}</div>
-                            <div className="text-[8px] font-bold text-slate-400 uppercase">Logs</div>
+                            <div className="text-[8px] font-bold text-slate-400 uppercase mb-2">Logs</div>
+                            {canManageMembers && (
+                              <button
+                                onClick={() => handleRemoveMember(member.memberId)}
+                                className="text-[9px] font-black text-rose-500 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 px-2 py-1 rounded-md transition-colors uppercase tracking-widest"
+                              >
+                                Remove
+                              </button>
+                            )}
                           </div>
                         </div>
                       </motion.div>

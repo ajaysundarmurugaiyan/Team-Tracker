@@ -86,33 +86,40 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
         }
       }
 
-      const formatted: Project[] = await Promise.all(
-        data.map(async (p: any) => {
-          const { count: memberCount } = await supabase
-            .from('project_members')
-            .select('*', { count: 'exact', head: true })
-            .eq('project_id', p.id);
+      const projectIds = data.map((p: any) => p.id);
+      
+      let memberCounts: Record<string, number> = {};
+      let logCounts: Record<string, number> = {};
 
-          const { count: logCount } = await supabase
-            .from('project_logs')
-            .select('*', { count: 'exact', head: true })
-            .eq('project_id', p.id);
+      if (projectIds.length > 0) {
+        // Batch fetch all members and logs for these projects to prevent N+1 query slowdown
+        const [{ data: membersData }, { data: logsData }] = await Promise.all([
+          supabase.from('project_members').select('project_id').in('project_id', projectIds),
+          supabase.from('project_logs').select('project_id').in('project_id', projectIds)
+        ]);
 
-          return {
-            id: p.id,
-            name: p.name,
-            description: p.description,
-            leadId: p.lead_id,
-            leadName: (p.profiles as any)?.full_name || 'Unknown',
-            startDate: p.start_date,
-            endDate: p.end_date,
-            status: p.status,
-            createdAt: p.created_at,
-            memberCount: memberCount || 0,
-            logCount: logCount || 0,
-          };
-        })
-      );
+        (membersData || []).forEach(m => {
+          memberCounts[m.project_id] = (memberCounts[m.project_id] || 0) + 1;
+        });
+
+        (logsData || []).forEach(l => {
+          logCounts[l.project_id] = (logCounts[l.project_id] || 0) + 1;
+        });
+      }
+
+      const formatted: Project[] = data.map((p: any) => ({
+        id: p.id,
+        name: p.name,
+        description: p.description,
+        leadId: p.lead_id,
+        leadName: (p.profiles as any)?.full_name || 'Unknown',
+        startDate: p.start_date,
+        endDate: p.end_date,
+        status: p.status,
+        createdAt: p.created_at,
+        memberCount: memberCounts[p.id] || 0,
+        logCount: logCounts[p.id] || 0,
+      }));
 
       setProjects(formatted);
     } catch (err) {

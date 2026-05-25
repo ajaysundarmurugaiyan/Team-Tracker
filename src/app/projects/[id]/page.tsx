@@ -14,6 +14,7 @@ import {
 import Link from 'next/link';
 import ProjectTimeline from '@/components/ProjectTimeline';
 import { useProjects } from '@/contexts/ProjectContext';
+import { useCopilot } from '@/contexts/CopilotContext';
 import { motion, AnimatePresence } from 'framer-motion';
 
 type TabKey = 'activity' | 'members' | 'skills' | 'retrospective';
@@ -73,6 +74,18 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
   const [newMemberId, setNewMemberId] = useState('');
   const [newMemberRole, setNewMemberRole] = useState('Member');
   const [isAddingMember, setIsAddingMember] = useState(false);
+  
+  const { actionPayload, setActionPayload } = useCopilot();
+
+  // Listen for AI voice commands to switch tabs
+  useEffect(() => {
+    if (actionPayload?.intent === 'switch_tab' && actionPayload.tabName) {
+      if (['activity', 'members', 'skills', 'retrospective'].includes(actionPayload.tabName)) {
+        setActiveTab(actionPayload.tabName as TabKey);
+        setActionPayload(null);
+      }
+    }
+  }, [actionPayload, setActionPayload]);
 
   const isLead = profile?.role === 'lead' || profile?.role === 'manager';
   const isProjectLead = project ? profile?.id === project.leadId : false;

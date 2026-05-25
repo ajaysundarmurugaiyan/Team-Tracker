@@ -3,6 +3,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { useProfile } from '@/hooks/useProfile';
 import { useLogs } from '@/hooks/useLogs';
 import { useProjects } from '@/contexts/ProjectContext';
+import { useCopilot } from '@/contexts/CopilotContext';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -38,6 +39,18 @@ function ManagerDashboard() {
   const [logsLoading, setLogsLoading] = useState(false);
   const [showSidebar, setShowSidebar] = useState(true);
   const [userTab, setUserTab] = useState<UserTab>('general');
+  
+  const { actionPayload, setActionPayload } = useCopilot();
+
+  // Listen for AI voice commands to switch tabs
+  useEffect(() => {
+    if (actionPayload?.intent === 'switch_tab' && actionPayload.tabName) {
+      if (['general', 'projects'].includes(actionPayload.tabName)) {
+        setUserTab(actionPayload.tabName as UserTab);
+        setActionPayload(null);
+      }
+    }
+  }, [actionPayload, setActionPayload]);
 
   useEffect(() => {
     if (!profileLoading && profile?.role !== 'manager') {

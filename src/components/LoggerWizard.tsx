@@ -12,6 +12,7 @@ import confetti from 'canvas-confetti';
 import { ChatMessage } from '@/types/chat';
 import { extractSkills, extractLearnings } from '@/lib/parser';
 import { useProjects } from '@/contexts/ProjectContext';
+import { useCopilot } from '@/contexts/CopilotContext';
 
 interface Props {
   onComplete: (data: { answers: string[]; skills: string[]; learnings: string[]; projectId?: string }) => Promise<void>;
@@ -53,6 +54,28 @@ export default function LoggerWizard({ onComplete }: Props) {
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  
+  const { actionPayload, setActionPayload } = useCopilot();
+
+  // Handle incoming Copilot action payload
+  useEffect(() => {
+    if (actionPayload?.intent === 'log_work') {
+      if (actionPayload.projectName) {
+        const proj = projects.find(p => p.name.toLowerCase().includes(actionPayload.projectName!.toLowerCase()));
+        if (proj) setSelectedProjectId(proj.id);
+      }
+      
+      if (actionPayload.taskDetails) {
+        setMessages([{ role: 'user', content: actionPayload.taskDetails, timestamp: Date.now() }]);
+        setAiSummary(actionPayload.taskDetails);
+        setLearningsList(['Captured via Voice/Copilot']);
+      }
+      
+      setStep(3); // Jump to review stage
+      setActionPayload(null); // Consume payload
+      toast.success('Copilot successfully drafted your log.');
+    }
+  }, [actionPayload, projects, setActionPayload]);
 
   // Scroll chat to bottom
   const scrollToBottom = () => {
@@ -809,7 +832,7 @@ export default function LoggerWizard({ onComplete }: Props) {
                         className="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:border-slate-300 font-medium text-slate-700 text-xs shadow-sm cursor-pointer"
                       >
                         <option value="">-- Unassigned (General Log) --</option>
-                        {projects.map(p => (
+                        {projects.filter(p => p.status === 'active').map(p => (
                           <option key={p.id} value={p.id}>{p.name}</option>
                         ))}
                       </select>

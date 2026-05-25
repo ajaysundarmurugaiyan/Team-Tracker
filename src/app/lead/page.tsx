@@ -3,6 +3,7 @@ import { useState, useEffect, useMemo, useCallback, Suspense } from 'react';
 import { useProfile } from '@/hooks/useProfile';
 import { useLogs } from '@/hooks/useLogs';
 import { useProjects } from '@/contexts/ProjectContext';
+import { useCopilot } from '@/contexts/CopilotContext';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -39,6 +40,18 @@ function LeadDashboard() {
   const [memberTab, setMemberTab] = useState<MemberTab>('general');
   const [newMemberId, setNewMemberId] = useState('');
   const [isAddingMember, setIsAddingMember] = useState(false);
+  
+  const { actionPayload, setActionPayload } = useCopilot();
+
+  // Listen for AI voice commands to switch tabs
+  useEffect(() => {
+    if (actionPayload?.intent === 'switch_tab' && actionPayload.tabName) {
+      if (['general', 'projects'].includes(actionPayload.tabName)) {
+        setMemberTab(actionPayload.tabName as MemberTab);
+        setActionPayload(null);
+      }
+    }
+  }, [actionPayload, setActionPayload]);
 
   const loadData = useCallback(async () => {
     setLoading(true);

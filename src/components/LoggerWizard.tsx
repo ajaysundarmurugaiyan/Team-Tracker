@@ -331,7 +331,7 @@ export default function LoggerWizard({ onComplete }: Props) {
               </p>
 
               {/* Project Pre-Selector */}
-              {projects.length > 0 && (
+              {projects.filter(p => p.status === 'active').length > 0 && (
                 <div className="max-w-md mx-auto w-full pt-2">
                   <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-2.5">
                     <div className="flex items-center gap-2">
@@ -351,7 +351,7 @@ export default function LoggerWizard({ onComplete }: Props) {
                       >
                         General Log (No Project)
                       </button>
-                      {projects.map(p => (
+                      {projects.filter(p => p.status === 'active').map(p => (
                         <button
                           key={p.id}
                           type="button"

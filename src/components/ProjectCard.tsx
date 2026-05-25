@@ -19,11 +19,11 @@ const STATUS_CONFIG = {
     glow: 'shadow-emerald-100',
   },
   completed: {
-    bar: 'from-indigo-400 to-violet-500',
-    badge: 'bg-indigo-50 text-indigo-700 border-indigo-200',
-    dot: 'bg-indigo-500',
+    bar: 'from-slate-700 to-slate-900',
+    badge: 'bg-slate-100 text-slate-800 border-slate-300',
+    dot: 'bg-slate-700',
     label: 'Completed',
-    glow: 'shadow-indigo-100',
+    glow: 'shadow-slate-200',
   },
   archived: {
     bar: 'from-slate-300 to-slate-400',
@@ -89,7 +89,7 @@ export default function ProjectCard({ project, index = 0 }: ProjectCardProps) {
               </div>
             </div>
           </div>
-          <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-indigo-500 group-hover:translate-x-0.5 transition-all flex-shrink-0 mt-1" />
+          <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-slate-900 group-hover:translate-x-0.5 transition-all flex-shrink-0 mt-1" />
         </div>
 
         {/* Description */}

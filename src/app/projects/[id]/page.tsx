@@ -20,7 +20,7 @@ type TabKey = 'activity' | 'members' | 'skills' | 'retrospective';
 
 const STATUS_CONFIG = {
   active: { bar: 'from-emerald-400 to-teal-500', badge: 'bg-emerald-50 text-emerald-700 border-emerald-200', label: 'Active' },
-  completed: { bar: 'from-indigo-400 to-violet-500', badge: 'bg-indigo-50 text-indigo-700 border-indigo-200', label: 'Completed' },
+  completed: { bar: 'from-slate-700 to-slate-900', badge: 'bg-slate-100 text-slate-800 border-slate-300', label: 'Completed' },
   archived: { bar: 'from-slate-300 to-slate-400', badge: 'bg-slate-50 text-slate-600 border-slate-200', label: 'Archived' },
 };
 
@@ -173,7 +173,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
     return (
       <div className="min-h-screen bg-[#f8fafc] flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-[3px] border-slate-200 border-t-indigo-500 rounded-full animate-spin" />
+          <div className="w-12 h-12 border-[3px] border-slate-200 border-t-slate-900 rounded-full animate-spin" />
           <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Loading Project</p>
         </div>
       </div>
@@ -189,7 +189,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
           </div>
           <h2 className="text-xl font-black text-slate-800 font-outfit">Project Not Found</h2>
           <p className="text-slate-500 text-sm">This project doesn't exist or you don't have access.</p>
-          <Link href="/projects" className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-700 font-black text-xs uppercase tracking-wider rounded-xl hover:bg-indigo-100 transition-colors border border-indigo-200">
+          <Link href="/projects" className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 text-white font-black text-xs uppercase tracking-wider rounded-xl hover:bg-black transition-colors border border-slate-900">
             <ArrowLeft className="w-3.5 h-3.5" /> Back to Projects
           </Link>
         </div>
@@ -234,7 +234,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                 </div>
                 <p className="text-sm text-slate-500 mt-1 max-w-2xl">{project.description || 'No description provided.'}</p>
                 <div className="flex items-center gap-1.5 mt-2">
-                  <ShieldCheck className="w-3.5 h-3.5 text-indigo-500" />
+                  <ShieldCheck className="w-3.5 h-3.5 text-slate-400" />
                   <span className="text-xs text-slate-500">Project Lead: <strong className="text-slate-700">{project.leadName}</strong></span>
                 </div>
               </div>
@@ -246,7 +246,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                 <button
                   onClick={handleMarkComplete}
                   disabled={isMarkingComplete}
-                  className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-md shadow-indigo-200 disabled:opacity-50"
+                  className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-slate-900 hover:bg-black text-white font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-md shadow-slate-900/10 disabled:opacity-50"
                 >
                   <CheckCircle2 className="w-3.5 h-3.5" />
                   <span className="truncate">{isMarkingComplete ? 'Updating...' : 'Mark Complete'}</span>
@@ -263,8 +263,8 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
             {[
               { label: 'Start Date', value: new Date(project.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }), icon: <Calendar className="w-4 h-4 text-slate-400" /> },
               { label: 'End Date', value: project.endDate ? new Date(project.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Ongoing', icon: <Clock className="w-4 h-4 text-slate-400" /> },
-              { label: 'Team Size', value: `${members.length} Members`, icon: <Users className="w-4 h-4 text-indigo-400" /> },
-              { label: 'Total Logs', value: `${logs.length} Entries`, icon: <FileText className="w-4 h-4 text-violet-400" /> },
+              { label: 'Team Size', value: `${members.length} Members`, icon: <Users className="w-4 h-4 text-emerald-400" /> },
+              { label: 'Total Logs', value: `${logs.length} Entries`, icon: <FileText className="w-4 h-4 text-blue-400" /> },
             ].map(s => (
               <div key={s.label} className="flex items-center gap-2.5 bg-slate-50 border border-slate-100 rounded-xl px-4 py-3">
                 {s.icon}
@@ -280,7 +280,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
           <div className="space-y-2">
             <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-slate-500">
               <span>Project Completion</span>
-              <span className="text-indigo-600">{progress.label}</span>
+              <span className="text-slate-900">{progress.label}</span>
             </div>
             <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
               <motion.div
@@ -308,7 +308,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
               >
                 {tab.icon}{tab.label}
                 {tab.count !== undefined && (
-                  <span className={`px-1.5 py-0.5 rounded-full text-[8px] font-black ${activeTab === tab.key ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-500'}`}>
+                  <span className={`px-1.5 py-0.5 rounded-full text-[8px] font-black ${activeTab === tab.key ? 'bg-slate-200 text-slate-800' : 'bg-slate-100 text-slate-500'}`}>
                     {tab.count}
                   </span>
                 )}
@@ -328,7 +328,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
               className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-2 space-y-4">
                 <h2 className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
-                  <Zap className="w-4 h-4 text-indigo-500" /> Live Activity Feed
+                  <Zap className="w-4 h-4 text-emerald-500" /> Live Activity Feed
                 </h2>
                 {logs.length === 0 ? (
                   <div className="py-16 bg-white rounded-2xl border border-slate-200 text-center">
@@ -363,7 +363,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                             {log.skills && log.skills.length > 0 && (
                               <div className="flex flex-wrap gap-1 mt-2">
                                 {log.skills.slice(0, 4).map((s, j) => (
-                                  <span key={j} className="px-1.5 py-0.5 bg-indigo-50 text-indigo-700 text-[8px] font-black rounded-full border border-indigo-100">{s}</span>
+                                  <span key={j} className="px-1.5 py-0.5 bg-slate-100 text-slate-700 text-[8px] font-black rounded-full border border-slate-200">{s}</span>
                                 ))}
                                 {log.skills.length > 4 && <span className="text-[8px] text-slate-400 font-bold">+{log.skills.length - 4}</span>}
                               </div>
@@ -384,7 +384,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
               {/* Contribution sidebar */}
               <div className="space-y-4">
                 <h2 className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
-                  <BarChart3 className="w-4 h-4 text-violet-500" /> Contributions
+                  <BarChart3 className="w-4 h-4 text-blue-500" /> Contributions
                 </h2>
                 {memberContributions.length === 0 ? (
                   <div className="py-8 bg-white rounded-2xl border border-slate-200 text-center">
@@ -433,7 +433,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
               className="space-y-4">
               <div className="flex items-center justify-between">
                 <h2 className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
-                  <Users className="w-4 h-4 text-indigo-500" /> Team Roster & Authority Map
+                  <Users className="w-4 h-4 text-emerald-500" /> Team Roster & Authority Map
                 </h2>
                 {isLead && (
                   <div className="flex items-center gap-1.5 text-xs text-amber-600 bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-full font-bold">
@@ -452,7 +452,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                       placeholder="e.g. 1045"
                       value={newMemberId}
                       onChange={e => setNewMemberId(e.target.value)}
-                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all"
+                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold focus:outline-none focus:border-slate-500 focus:ring-1 focus:ring-slate-500 transition-all"
                     />
                   </div>
                   <div className="flex-1 w-full space-y-1.5">
@@ -461,7 +461,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                       <select 
                         value={newMemberRole}
                         onChange={e => setNewMemberRole(e.target.value)}
-                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all appearance-none cursor-pointer text-slate-800"
+                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold focus:outline-none focus:border-slate-500 focus:ring-1 focus:ring-slate-500 transition-all appearance-none cursor-pointer text-slate-800"
                       >
                         <option value="Member">Member</option>
                         <option value="Lead">Lead</option>
@@ -472,7 +472,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                   <button
                     onClick={handleAddMember}
                     disabled={!newMemberId || isAddingMember}
-                    className="w-full md:w-auto px-6 py-2.5 bg-indigo-600 text-white rounded-lg font-black text-[10px] uppercase tracking-wider hover:bg-indigo-700 disabled:opacity-50 transition-colors h-[42px] flex items-center justify-center"
+                    className="w-full md:w-auto px-6 py-2.5 bg-slate-900 text-white rounded-lg font-black text-[10px] uppercase tracking-wider hover:bg-black disabled:opacity-50 transition-colors h-[42px] flex items-center justify-center shadow-md shadow-slate-900/10"
                   >
                     {isAddingMember ? 'Adding...' : 'Assign Asset'}
                   </button>
@@ -481,7 +481,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
 
               {/* Legend */}
               <div className="flex flex-wrap gap-3 p-3 bg-slate-50 border border-slate-100 rounded-xl text-[9px] font-bold text-slate-500 uppercase tracking-wider">
-                <div className="flex items-center gap-1.5"><div className="w-3 h-3 bg-indigo-500 rounded-full" />Project Lead (created project)</div>
+                <div className="flex items-center gap-1.5"><div className="w-3 h-3 bg-slate-900 rounded-full" />Project Lead (created project)</div>
                 <div className="flex items-center gap-1.5"><div className="w-3 h-3 bg-amber-500 rounded-full" />Org Lead (member's reporting lead)</div>
                 <div className="flex items-center gap-1.5"><div className="w-3 h-3 bg-slate-300 rounded-full" />Member (contributor)</div>
               </div>
@@ -521,7 +521,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                             {/* Lead indicators */}
                             <div className="mt-2 space-y-1">
                               <div className="flex items-center gap-1.5">
-                                <div className="w-2 h-2 bg-indigo-500 rounded-full flex-shrink-0" />
+                                <div className="w-2 h-2 bg-slate-900 rounded-full flex-shrink-0" />
                                 <span className="text-[9px] font-bold text-slate-500">Project Lead: <span className="text-slate-700">{project.leadName}</span></span>
                               </div>
                               {member.orgLeadName && (
@@ -561,7 +561,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
             <motion.div key="skills" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
               className="space-y-4">
               <h2 className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
-                <Code className="w-4 h-4 text-indigo-500" /> Skill Matrix — All Member Contributions
+                <Code className="w-4 h-4 text-emerald-500" /> Skill Matrix — All Member Contributions
               </h2>
               {allSkills.length === 0 ? (
                 <div className="py-16 bg-white rounded-2xl border border-slate-200 text-center">
@@ -589,7 +589,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                                 initial={{ width: 0 }}
                                 animate={{ width: `${pct}%` }}
                                 transition={{ delay: i * 0.06 + 0.2, duration: 0.7, ease: 'easeOut' }}
-                                className="h-full bg-gradient-to-r from-indigo-400 to-violet-500 rounded-full"
+                                className="h-full bg-gradient-to-r from-slate-600 to-slate-800 rounded-full"
                               />
                             </div>
                           </div>
@@ -612,7 +612,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ delay: i * 0.04 }}
                             style={{ fontSize: `${size}px` }}
-                            className="px-2.5 py-1 bg-indigo-50 text-indigo-700 font-black rounded-full border border-indigo-100 hover:bg-indigo-100 transition-colors cursor-default"
+                            className="px-2.5 py-1 bg-slate-100 text-slate-700 font-black rounded-full border border-slate-200 hover:bg-slate-200 transition-colors cursor-default"
                           >
                             {skill}
                           </motion.span>
@@ -655,7 +655,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
 
               {/* Retrospective banner for completed projects */}
               {project.status === 'completed' && (
-                <div className="relative overflow-hidden bg-gradient-to-r from-indigo-600 to-violet-700 rounded-2xl p-6 text-white shadow-xl shadow-indigo-200">
+                <div className="relative overflow-hidden bg-slate-900 rounded-2xl p-6 text-white shadow-xl shadow-slate-900/20">
                   <div className="absolute inset-0 bg-white/5 mix-blend-overlay" />
                   <div className="absolute -right-8 -top-8 w-32 h-32 bg-white/10 rounded-full" />
                   <div className="absolute -right-4 -bottom-8 w-24 h-24 bg-white/10 rounded-full" />
@@ -688,7 +688,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
 
               <div>
                 <h2 className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2 mb-4">
-                  <Clock className="w-4 h-4 text-indigo-500" /> Full Activity Timeline
+                  <Clock className="w-4 h-4 text-blue-500" /> Full Activity Timeline
                 </h2>
                 <ProjectTimeline logs={logs} showOrgLead={isLead} />
               </div>

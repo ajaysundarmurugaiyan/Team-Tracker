@@ -14,7 +14,7 @@ type FilterTab = 'all' | 'active' | 'completed' | 'archived';
 const TAB_CONFIG: { key: FilterTab; label: string; icon: React.ReactNode; color: string }[] = [
   { key: 'all', label: 'All Projects', icon: <FolderGit2 className="w-3.5 h-3.5" />, color: 'text-slate-600' },
   { key: 'active', label: 'Active', icon: <Zap className="w-3.5 h-3.5" />, color: 'text-emerald-600' },
-  { key: 'completed', label: 'Completed', icon: <CheckCircle className="w-3.5 h-3.5" />, color: 'text-indigo-600' },
+  { key: 'completed', label: 'Completed', icon: <CheckCircle className="w-3.5 h-3.5" />, color: 'text-slate-800' },
   { key: 'archived', label: 'Archived', icon: <Archive className="w-3.5 h-3.5" />, color: 'text-slate-400' },
 ];
 
@@ -48,7 +48,7 @@ export default function ProjectsPage() {
     return (
       <div className="min-h-screen bg-[#f8fafc] flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-[3px] border-slate-200 border-t-indigo-500 rounded-full animate-spin" />
+          <div className="w-12 h-12 border-[3px] border-slate-200 border-t-slate-900 rounded-full animate-spin" />
           <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Loading Projects</p>
         </div>
       </div>
@@ -72,7 +72,7 @@ export default function ProjectsPage() {
               </button>
               <div className="flex-1">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-200 shrink-0">
+                  <div className="w-10 h-10 bg-slate-900 rounded-xl flex items-center justify-center shadow-lg shadow-slate-900/20 shrink-0">
                     <FolderGit2 className="w-5 h-5 text-white" />
                   </div>
                   <div>
@@ -92,13 +92,13 @@ export default function ProjectsPage() {
                   placeholder="Search projects..."
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
-                  className="pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all w-full md:w-52 text-slate-800 placeholder:text-slate-400 font-medium"
+                  className="pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-100 transition-all w-full md:w-52 text-slate-800 placeholder:text-slate-400 font-medium"
                 />
               </div>
               {canCreate && (
                 <button
                   onClick={() => setIsModalOpen(true)}
-                  className="flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-md shadow-indigo-200 active:scale-[0.98] shrink-0"
+                  className="flex items-center justify-center gap-2 px-4 py-2 bg-slate-900 hover:bg-black text-white font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-md shadow-slate-900/10 active:scale-[0.98] shrink-0 border border-white/10"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span className="hidden sm:inline">New Project</span>
@@ -112,8 +112,8 @@ export default function ProjectsPage() {
             {[
               { label: 'Total Projects', value: stats.total, icon: <FolderGit2 className="w-4 h-4 text-slate-400" />, color: 'text-slate-800' },
               { label: 'Active', value: stats.active, icon: <Zap className="w-4 h-4 text-emerald-500" />, color: 'text-emerald-700' },
-              { label: 'Completed', value: stats.completed, icon: <CheckCircle className="w-4 h-4 text-indigo-500" />, color: 'text-indigo-700' },
-              { label: 'Total Logs', value: stats.totalLogs, icon: <FileText className="w-4 h-4 text-violet-500" />, color: 'text-violet-700' },
+              { label: 'Completed', value: stats.completed, icon: <CheckCircle className="w-4 h-4 text-slate-600" />, color: 'text-slate-800' },
+              { label: 'Total Logs', value: stats.totalLogs, icon: <FileText className="w-4 h-4 text-blue-500" />, color: 'text-blue-700' },
             ].map(stat => (
               <div key={stat.label} className="bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 flex items-center gap-3">
                 {stat.icon}
@@ -140,7 +140,7 @@ export default function ProjectsPage() {
                 {tab.icon}
                 {tab.label}
                 <span className={`ml-0.5 px-1.5 py-0.5 rounded-full text-[8px] font-black ${
-                  activeTab === tab.key ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-500'
+                  activeTab === tab.key ? 'bg-slate-200 text-slate-800' : 'bg-slate-100 text-slate-500'
                 }`}>
                   {tab.key === 'all' ? stats.total : projects.filter(p => p.status === tab.key).length}
                 </span>
@@ -160,8 +160,8 @@ export default function ProjectsPage() {
               animate={{ opacity: 1, y: 0 }}
               className="py-24 flex flex-col items-center justify-center bg-white rounded-2xl border border-slate-200 shadow-sm"
             >
-              <div className="w-20 h-20 bg-indigo-50 rounded-2xl flex items-center justify-center mb-4">
-                <FolderGit2 className="w-10 h-10 text-indigo-300" />
+              <div className="w-20 h-20 bg-slate-100 rounded-2xl flex items-center justify-center mb-4">
+                <FolderGit2 className="w-10 h-10 text-slate-400" />
               </div>
               <h3 className="text-lg font-black text-slate-700 font-outfit mb-1">No projects found</h3>
               <p className="text-sm text-slate-400 mb-6 text-center max-w-xs">
@@ -174,7 +174,7 @@ export default function ProjectsPage() {
               {!searchQuery && activeTab === 'all' && canCreate && (
                 <button
                   onClick={() => setIsModalOpen(true)}
-                  className="flex items-center gap-2 px-5 py-2.5 bg-indigo-50 text-indigo-700 font-black text-xs uppercase tracking-wider rounded-xl hover:bg-indigo-100 transition-colors border border-indigo-200"
+                  className="flex items-center gap-2 px-5 py-2.5 bg-slate-900 text-white font-black text-xs uppercase tracking-wider rounded-xl hover:bg-black transition-colors border border-slate-900 shadow-md shadow-slate-900/10"
                 >
                   <Plus className="w-4 h-4" /> Create First Project
                 </button>

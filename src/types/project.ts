@@ -18,6 +18,8 @@ export interface ProjectMember {
   memberId: string;
   memberName?: string;
   employeeId?: string;
+  orgLeadId?: string | null;
+  orgLeadName?: string | null;
   role: string;
   joinedAt: string;
   leftAt: string | null;

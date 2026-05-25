@@ -6,6 +6,15 @@ import { supabase } from '@/lib/supabase';
 import { useProfile } from '@/hooks/useProfile';
 import { toast } from 'sonner';
 
+export interface ProjectLog extends WorkLog {
+  userName?: string;
+  userId?: string;
+  orgLeadName?: string;
+  orgLeadId?: string;
+  projectId?: string;
+  projectName?: string;
+}
+
 interface ProjectContextType {
   projects: Project[];
   loading: boolean;
@@ -15,7 +24,8 @@ interface ProjectContextType {
   addMemberToProject: (projectId: string, employeeId: string, role?: string) => Promise<void>;
   removeMemberFromProject: (projectId: string, memberId: string) => Promise<void>;
   fetchProjectMembers: (projectId: string) => Promise<ProjectMember[]>;
-  fetchProjectLogs: (projectId: string) => Promise<(WorkLog & { userName?: string })[]>;
+  fetchProjectLogs: (projectId: string) => Promise<ProjectLog[]>;
+  fetchMemberProjectLogs: (userId: string) => Promise<ProjectLog[]>;
   tagLogToProject: (logId: string, projectId: string) => Promise<void>;
   untagLogFromProject: (logId: string, projectId: string) => Promise<void>;
   fetchMyProjects: () => Promise<Project[]>;
@@ -46,14 +56,12 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
       let data: any[] = [];
       
       if (profile?.role === 'manager') {
-        // Manager sees all projects
         const res = await supabase
           .from('projects')
           .select('*, profiles!projects_lead_id_fkey(full_name)')
           .order('created_at', { ascending: false });
         data = res.data || [];
       } else if (profile?.role === 'lead') {
-        // Lead sees projects they created
         const res = await supabase
           .from('projects')
           .select('*, profiles!projects_lead_id_fkey(full_name)')
@@ -61,7 +69,6 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
           .order('created_at', { ascending: false });
         data = res.data || [];
       } else {
-        // Member sees projects they're assigned to
         const memberRes = await supabase
           .from('project_members')
           .select('project_id')
@@ -79,11 +86,15 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
         }
       }
 
-      // Get member counts for each project
       const formatted: Project[] = await Promise.all(
         data.map(async (p: any) => {
-          const { count } = await supabase
+          const { count: memberCount } = await supabase
             .from('project_members')
+            .select('*', { count: 'exact', head: true })
+            .eq('project_id', p.id);
+
+          const { count: logCount } = await supabase
+            .from('project_logs')
             .select('*', { count: 'exact', head: true })
             .eq('project_id', p.id);
 
@@ -97,7 +108,8 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
             endDate: p.end_date,
             status: p.status,
             createdAt: p.created_at,
-            memberCount: count || 0
+            memberCount: memberCount || 0,
+            logCount: logCount || 0,
           };
         })
       );
@@ -150,7 +162,8 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
           endDate: created.end_date,
           status: created.status,
           createdAt: created.created_at,
-          memberCount: 0
+          memberCount: 0,
+          logCount: 0,
         };
         setProjects(prev => [newProject, ...prev]);
         toast.success('Project created successfully.');
@@ -216,7 +229,6 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
 
   const addMemberToProject = async (projectId: string, employeeId: string, role: string = 'developer') => {
     try {
-      // Find the member by employee_id
       const { data: memberProfile, error: findError } = await supabase
         .from('profiles')
         .select('id, full_name')
@@ -228,7 +240,6 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      // Check if already a member
       const { data: existing } = await supabase
         .from('project_members')
         .select('id')
@@ -255,7 +266,6 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      // Update local member count
       setProjects(prev =>
         prev.map(p =>
           p.id === projectId
@@ -302,12 +312,11 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
     try {
       const { data, error } = await supabase
         .from('project_members')
-        .select('*, profiles!project_members_member_id_fkey(full_name, employee_id)')
+        .select('*, profiles!project_members_member_id_fkey(full_name, employee_id, lead_id)')
         .eq('project_id', projectId)
         .order('joined_at', { ascending: true });
 
       if (error) {
-        // Fallback: fetch without join
         const { data: membersRaw } = await supabase
           .from('project_members')
           .select('*')
@@ -318,40 +327,67 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
         const memberIds = membersRaw.map(m => m.member_id);
         const { data: profiles } = await supabase
           .from('profiles')
-          .select('id, full_name, employee_id')
+          .select('id, full_name, employee_id, lead_id')
           .in('id', memberIds);
 
-        return membersRaw.map(m => ({
+        // Fetch org lead names for all unique lead_ids
+        const leadIds = [...new Set((profiles || []).map(p => p.lead_id).filter(Boolean))];
+        const { data: leadProfiles } = leadIds.length > 0
+          ? await supabase.from('profiles').select('id, full_name').in('id', leadIds)
+          : { data: [] };
+
+        return membersRaw.map(m => {
+          const memberProfile = profiles?.find(p => p.id === m.member_id);
+          const orgLead = leadProfiles?.find(l => l.id === memberProfile?.lead_id);
+          return {
+            id: m.id,
+            projectId: m.project_id,
+            memberId: m.member_id,
+            memberName: memberProfile?.full_name || 'Unknown',
+            employeeId: memberProfile?.employee_id || '',
+            orgLeadId: memberProfile?.lead_id || null,
+            orgLeadName: orgLead?.full_name || null,
+            role: m.role,
+            joinedAt: m.joined_at,
+            leftAt: m.left_at
+          };
+        });
+      }
+
+      // Collect all unique lead_ids from member profiles
+      const leadIds = [...new Set(
+        (data || [])
+          .map((m: any) => m.profiles?.lead_id)
+          .filter(Boolean)
+      )];
+
+      const { data: leadProfiles } = leadIds.length > 0
+        ? await supabase.from('profiles').select('id, full_name').in('id', leadIds)
+        : { data: [] };
+
+      return (data || []).map((m: any) => {
+        const orgLead = leadProfiles?.find((l: any) => l.id === m.profiles?.lead_id);
+        return {
           id: m.id,
           projectId: m.project_id,
           memberId: m.member_id,
-          memberName: profiles?.find(p => p.id === m.member_id)?.full_name || 'Unknown',
-          employeeId: profiles?.find(p => p.id === m.member_id)?.employee_id || '',
+          memberName: m.profiles?.full_name || 'Unknown',
+          employeeId: m.profiles?.employee_id || '',
+          orgLeadId: m.profiles?.lead_id || null,
+          orgLeadName: orgLead?.full_name || null,
           role: m.role,
           joinedAt: m.joined_at,
           leftAt: m.left_at
-        }));
-      }
-
-      return (data || []).map((m: any) => ({
-        id: m.id,
-        projectId: m.project_id,
-        memberId: m.member_id,
-        memberName: m.profiles?.full_name || 'Unknown',
-        employeeId: m.profiles?.employee_id || '',
-        role: m.role,
-        joinedAt: m.joined_at,
-        leftAt: m.left_at
-      }));
+        };
+      });
     } catch (err) {
       console.error('Fetch project members error:', err);
       return [];
     }
   };
 
-  const fetchProjectLogs = async (projectId: string): Promise<(WorkLog & { userName?: string })[]> => {
+  const fetchProjectLogs = async (projectId: string): Promise<ProjectLog[]> => {
     try {
-      // Get log IDs for this project
       const { data: projectLogLinks, error: linkError } = await supabase
         .from('project_logs')
         .select('log_id')
@@ -361,15 +397,13 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
 
       const logIds = projectLogLinks.map(pl => pl.log_id);
 
-      // Fetch the actual logs with user info
       const { data: logsData, error: logsError } = await supabase
         .from('logs')
-        .select('*, profiles!logs_user_id_fkey(full_name)')
+        .select('*, profiles!logs_user_id_fkey(full_name, lead_id)')
         .in('id', logIds)
         .order('created_at', { ascending: false });
 
       if (logsError) {
-        // Fallback without join
         const { data: plainLogs } = await supabase
           .from('logs')
           .select('*')
@@ -383,21 +417,99 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
           skills: l.skills || [],
           learnings: l.learnings || [],
           createdAt: new Date(l.created_at).getTime(),
-          userName: 'Team Member'
+          userId: l.user_id,
+          userName: 'Team Member',
+          orgLeadName: undefined,
+          orgLeadId: undefined,
         }));
       }
 
-      return (logsData || []).map((l: any) => ({
-        id: l.id,
-        date: l.date,
-        content: l.content,
-        skills: l.skills || [],
-        learnings: l.learnings || [],
-        createdAt: new Date(l.created_at).getTime(),
-        userName: l.profiles?.full_name || 'Team Member'
-      }));
+      // Collect all unique lead_ids for org lead lookup
+      const leadIds = [...new Set(
+        (logsData || [])
+          .map((l: any) => l.profiles?.lead_id)
+          .filter(Boolean)
+      )];
+
+      const { data: leadProfiles } = leadIds.length > 0
+        ? await supabase.from('profiles').select('id, full_name').in('id', leadIds)
+        : { data: [] };
+
+      return (logsData || []).map((l: any) => {
+        const orgLead = leadProfiles?.find((lp: any) => lp.id === l.profiles?.lead_id);
+        return {
+          id: l.id,
+          date: l.date,
+          content: l.content,
+          skills: l.skills || [],
+          learnings: l.learnings || [],
+          createdAt: new Date(l.created_at).getTime(),
+          userId: l.user_id,
+          userName: l.profiles?.full_name || 'Team Member',
+          orgLeadName: orgLead?.full_name || null,
+          orgLeadId: l.profiles?.lead_id || null,
+        };
+      });
     } catch (err) {
       console.error('Fetch project logs error:', err);
+      return [];
+    }
+  };
+
+  /**
+   * Dual-authority: fetch ALL project logs authored by a specific user,
+   * across ANY project — regardless of which lead owns those projects.
+   * Used by org leads to see their member's contributions to other leads' projects.
+   */
+  const fetchMemberProjectLogs = async (userId: string): Promise<ProjectLog[]> => {
+    try {
+      // Get all logs by this user that are tagged to any project
+      const { data: userLogs, error: logsError } = await supabase
+        .from('logs')
+        .select('id, date, content, skills, learnings, created_at')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+      if (logsError || !userLogs || userLogs.length === 0) return [];
+
+      const logIds = userLogs.map(l => l.id);
+
+      // Find which of these logs are tagged to projects
+      const { data: projectLinks, error: linksError } = await supabase
+        .from('project_logs')
+        .select('log_id, project_id')
+        .in('log_id', logIds);
+
+      if (linksError || !projectLinks || projectLinks.length === 0) return [];
+
+      // Get the project names for those project IDs
+      const projectIds = [...new Set(projectLinks.map(pl => pl.project_id))];
+      const { data: projectsData } = await supabase
+        .from('projects')
+        .select('id, name, lead_id, profiles!projects_lead_id_fkey(full_name)')
+        .in('id', projectIds);
+
+      const linkedLogIds = new Set(projectLinks.map(pl => pl.log_id));
+      const linkedLogs = userLogs.filter(l => linkedLogIds.has(l.id));
+
+      return linkedLogs.map(l => {
+        const link = projectLinks.find(pl => pl.log_id === l.id);
+        const project = projectsData?.find((p: any) => p.id === link?.project_id);
+        return {
+          id: l.id,
+          date: l.date,
+          content: l.content,
+          skills: l.skills || [],
+          learnings: l.learnings || [],
+          createdAt: new Date(l.created_at).getTime(),
+          userId: userId,
+          projectId: link?.project_id,
+          projectName: project?.name || 'Unknown Project',
+          orgLeadName: (project as any)?.profiles?.full_name || null,
+        };
+      });
+    } catch (err) {
+      console.error('Fetch member project logs error:', err);
       return [];
     }
   };
@@ -417,7 +529,14 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      toast.success('Log tagged to project.');
+      // Update local log count
+      setProjects(prev =>
+        prev.map(p =>
+          p.id === projectId
+            ? { ...p, logCount: (p.logCount || 0) + 1 }
+            : p
+        )
+      );
     } catch (err) {
       console.error('Tag log error:', err);
     }
@@ -462,6 +581,16 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
 
       if (error || !data) return null;
 
+      const { count: memberCount } = await supabase
+        .from('project_members')
+        .select('*', { count: 'exact', head: true })
+        .eq('project_id', id);
+
+      const { count: logCount } = await supabase
+        .from('project_logs')
+        .select('*', { count: 'exact', head: true })
+        .eq('project_id', id);
+
       return {
         id: data.id,
         name: data.name,
@@ -472,7 +601,8 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
         endDate: data.end_date,
         status: data.status,
         createdAt: data.created_at,
-        memberCount: 0
+        memberCount: memberCount || 0,
+        logCount: logCount || 0,
       };
     } catch (err) {
       console.error('Fetch project by id error:', err);
@@ -491,6 +621,7 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
       removeMemberFromProject,
       fetchProjectMembers,
       fetchProjectLogs,
+      fetchMemberProjectLogs,
       tagLogToProject,
       untagLogFromProject,
       fetchMyProjects,

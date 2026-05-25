@@ -1,5 +1,5 @@
 'use client';
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
 import { UserProfile } from '@/types/profile';
 import { supabase } from '@/lib/supabase';
 import { User } from '@supabase/supabase-js';
@@ -29,6 +29,9 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let mounted = true;
+    // Track whether initSession already handled the initial fetch
+    // so the auth listener's INITIAL_SESSION event doesn't double-fetch.
+    let initialSessionHandled = false;
 
     const handleOnline = () => {
       setIsOnline(true);
@@ -63,8 +66,10 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
         if (mounted) {
           setUser(currentUser);
           if (currentUser) {
+            initialSessionHandled = true;
             await fetchProfile(currentUser.id);
           } else {
+            initialSessionHandled = true;
             setLoading(false);
           }
         }
@@ -81,11 +86,22 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       const currentUser = session?.user ?? null;
       
       if (mounted) {
-        setUser(currentUser);
-        if (currentUser && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED')) {
-          if (!profile || profile.id !== currentUser.id) {
-            await fetchProfile(currentUser.id);
+        // Skip INITIAL_SESSION if initSession already handled it to avoid double fetch
+        if (event === 'INITIAL_SESSION') {
+          if (!initialSessionHandled) {
+            setUser(currentUser);
+            if (currentUser) {
+              await fetchProfile(currentUser.id);
+            } else {
+              setLoading(false);
+            }
           }
+          return;
+        }
+
+        setUser(currentUser);
+        if (currentUser && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')) {
+          await fetchProfile(currentUser.id);
         } else if (event === 'SIGNED_OUT') {
           setProfile(null);
           setLoading(false);

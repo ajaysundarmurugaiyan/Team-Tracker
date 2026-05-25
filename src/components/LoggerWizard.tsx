@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Check, Sparkles, Code, Brain, Rocket, Plus, ArrowRight, 
   Bot, User, Send, ArrowLeft, RefreshCw, Trash2, Clock, 
-  MessageSquare, Edit2, AlertCircle, X, ChevronRight, CheckCircle2 
+  MessageSquare, Edit2, AlertCircle, X, ChevronRight, CheckCircle2, FolderGit2
 } from 'lucide-react';
 import { toast } from 'sonner';
 import confetti from 'canvas-confetti';
@@ -83,7 +83,7 @@ export default function LoggerWizard({ onComplete }: Props) {
   const startManualLog = () => {
     setSelectedSkills(['General']);
     setLearningsList(['General progress logged manually.']);
-    setAiSummary('');
+    setAiSummary('Manual work session logged.');
     setStep(3);
   };
 
@@ -329,6 +329,58 @@ export default function LoggerWizard({ onComplete }: Props) {
                 Connect with our work log AI to naturally discuss your daily achievements. 
                 We will automatically extract used skills, track learnings, and format a professional audit log.
               </p>
+
+              {/* Project Pre-Selector */}
+              {projects.length > 0 && (
+                <div className="max-w-md mx-auto w-full pt-2">
+                  <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-2.5">
+                    <div className="flex items-center gap-2">
+                      <FolderGit2 className="w-3.5 h-3.5 text-indigo-500" />
+                      <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Tag to Project (Optional)</span>
+                    </div>
+                    <div className="grid grid-cols-1 gap-1.5 max-h-40 overflow-y-auto scrollbar-thin">
+                      {/* None option */}
+                      <button
+                        type="button"
+                        onClick={() => setSelectedProjectId('')}
+                        className={`w-full text-left px-3 py-2 rounded-xl text-[10px] font-bold transition-all border ${
+                          selectedProjectId === ''
+                            ? 'bg-slate-900 text-white border-slate-900'
+                            : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300 hover:text-slate-700'
+                        }`}
+                      >
+                        General Log (No Project)
+                      </button>
+                      {projects.map(p => (
+                        <button
+                          key={p.id}
+                          type="button"
+                          onClick={() => setSelectedProjectId(p.id)}
+                          className={`w-full text-left px-3 py-2 rounded-xl text-[10px] font-bold transition-all border flex items-center justify-between ${
+                            selectedProjectId === p.id
+                              ? 'bg-indigo-600 text-white border-indigo-600'
+                              : 'bg-white text-slate-700 border-slate-200 hover:border-indigo-300 hover:text-indigo-700'
+                          }`}
+                        >
+                          <span>{p.name}</span>
+                          <span className={`text-[8px] font-black uppercase px-1.5 py-0.5 rounded-full ${
+                            selectedProjectId === p.id
+                              ? 'bg-white/20 text-white'
+                              : p.status === 'active' ? 'bg-emerald-50 text-emerald-600 border border-emerald-200'
+                              : 'bg-slate-50 text-slate-400 border border-slate-200'
+                          }`}>{p.status}</span>
+                        </button>
+                      ))}
+                    </div>
+                    {selectedProjectId && (
+                      <div className="flex items-center gap-1.5 text-[9px] font-bold text-indigo-600">
+                        <CheckCircle2 className="w-3 h-3" />
+                        <span>This log will be auto-linked to <strong>{projects.find(p => p.id === selectedProjectId)?.name}</strong></span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
 
               <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4 max-w-md mx-auto">
                 <button
@@ -894,7 +946,7 @@ export default function LoggerWizard({ onComplete }: Props) {
                 <button
                   type="button"
                   onClick={handleCommitLog}
-                  disabled={isSyncing || !aiSummary.trim()}
+                  disabled={isSyncing || (!aiSummary.trim() && selectedSkills.length === 0 && learningsList.length === 0)}
                   className="w-full sm:w-auto px-6 py-3.5 bg-slate-900 text-white rounded-xl shadow-md hover:bg-black active:scale-[0.98] transition-all font-black uppercase tracking-[0.15em] text-[9px] flex items-center justify-center gap-2.5 disabled:opacity-20"
                 >
                   <Check className="w-3.5 h-3.5 text-emerald-400 stroke-[3px]" />

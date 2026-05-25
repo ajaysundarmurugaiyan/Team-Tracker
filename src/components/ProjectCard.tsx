@@ -34,7 +34,8 @@ const STATUS_CONFIG = {
   },
 };
 
-function calculateProgress(start: string, end: string | null | undefined) {
+function calculateProgress(start: string, end: string | null | undefined, status: string) {
+  if (status === 'completed') return { percent: 100, label: '100%' };
   if (!end) return { percent: 55, label: 'Ongoing' };
   const startDate = new Date(start).getTime();
   const endDate = new Date(end).getTime();
@@ -51,7 +52,7 @@ function getInitials(name: string) {
 
 export default function ProjectCard({ project, index = 0 }: ProjectCardProps) {
   const cfg = STATUS_CONFIG[project.status] || STATUS_CONFIG.archived;
-  const progress = calculateProgress(project.startDate, project.endDate);
+  const progress = calculateProgress(project.startDate, project.endDate, project.status);
   const daysLeft = project.endDate
     ? Math.max(0, Math.ceil((new Date(project.endDate).getTime() - Date.now()) / 86400000))
     : null;

@@ -24,7 +24,8 @@ const STATUS_CONFIG = {
   archived: { bar: 'from-slate-300 to-slate-400', badge: 'bg-slate-50 text-slate-600 border-slate-200', label: 'Archived' },
 };
 
-function calculateProgress(start: string, end: string | null | undefined) {
+function calculateProgress(start: string, end: string | null | undefined, status: string) {
+  if (status === 'completed') return { percent: 100, label: '100%' };
   if (!end) return { percent: 55, label: 'Ongoing' };
   const s = new Date(start).getTime(), e = new Date(end).getTime(), n = Date.now();
   if (n < s) return { percent: 0, label: 'Not Started' };
@@ -103,7 +104,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
   }, [id, ctxLoading]);
 
   // Computed stats
-  const progress = useMemo(() => project ? calculateProgress(project.startDate, project.endDate) : { percent: 0, label: '' }, [project]);
+  const progress = useMemo(() => project ? calculateProgress(project.startDate, project.endDate, project.status) : { percent: 0, label: '' }, [project]);
 
   const memberContributions = useMemo(() => {
     const map: Record<string, { name: string; userId: string; logs: ProjectLog[]; skills: Set<string>; orgLeadName?: string | null }> = {};
